@@ -1,0 +1,5 @@
+keyboard~=0.13.5
+PyAutoGUI~=0.9.53
+pyperclip~=1.8.2
+pynput~=1.7.6
+openpyxl~=3.0.9

@@ -10,8 +10,8 @@
 
 # Les bibliothèques importées
 import keyboard
-from anamnese_fen import FenetreAnamnese
-from donnee_fen import FenetreDonnee
+from fenetre_anamnese import FenetreAnamnese
+from fenetre_donnee import FenetreDonnee
 from pynput.keyboard import *
 import time
 import pyautogui
