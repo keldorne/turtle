@@ -11,6 +11,7 @@
 # Les bibliothèques importées
 import keyboard
 from anamnese_fen import FenetreAnamnese
+from donnee_fen import FenetreDonnee
 from pynput.keyboard import *
 import time
 import pyautogui
@@ -83,6 +84,8 @@ def press_on(key):
 
     if key == Key.f9:
         if step_one == 0 and step_two == 0 and step_three == 0:
+            app = FenetreDonnee()
+            app.mainloop()
             # Première étape on récupère nom prénom et on allume Calisto
             pyautogui.click(107, 31)
             time.sleep(duree)
