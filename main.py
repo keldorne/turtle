@@ -1,12 +1,4 @@
-# Pré-requis pour que le script marche
-# Preparation en amont, dans le logiciel Callisto il faut rebinder les raccourucis F5 à F12.
-# Dans le logiciel callisto il faut paramètrer le bon template pour la prise de note
-# Dans les options de calisto il faut importer le bon template d'impression, qu'il faut définir par défaut
-# dans menu/règlage/Configuration AC440/Configuration impression de la catégorie audiométrie tonale (
-# partie audiomètre
-# Il faut configurer dans calisto l'impression pdf par défaut menu/règlage/paramètre généraux/impression pdf
-# Il faut un dossier DocumentsCalisto à l'endroit du calisto_report_path où modifier le path en conséquence
-# Le dossier DocumentCalisto doit contenir un dossier au nom de l'EHPAD
+
 
 # Les bibliothèques importées
 import keyboard
@@ -72,15 +64,9 @@ ws.cell(row=2, column=7).value = la_date_jour_save
 
 # Fonction principale qui détecte les touches du clavier
 def press_on(key):
-    global step_one
-    global step_two
-    global step_three
-    global nom
-    global prenom
-    global duree
-    global CALISTO_REPORT_PATH
-    global numero_patient
-    global nom_MR
+    global step_one, step_two, step_three,\
+        nom, nom_MR, numero_patient, CALISTO_REPORT_PATH,\
+        duree, prenom
 
     if key == Key.f9:
         if step_one == 0 and step_two == 0 and step_three == 0:
