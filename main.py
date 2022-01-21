@@ -9,9 +9,8 @@ import keyboard
 from pynput.keyboard import *
 import time
 import pyautogui
-import pyperclip
 import os
-import winsound
+import pygame
 import openpyxl
 from datetime import datetime
 import shutil
@@ -181,9 +180,12 @@ def press_on(key):
 
     if key == Key.f5:
         print("fermeture du programme")
-        winsound.PlaySound('son_fin.wav', winsound.SND_FILENAME)
-        time.sleep(0.0125)
-        winsound.PlaySound('son_fin.wav', winsound.SND_FILENAME)
+        pygame.mixer.init()
+        pygame.mixer.music.load('son_fin.mp3')
+        pygame.mixer.music.play()
+        time.sleep(0,5)
+        pygame.mixer.music.play()
+
         step_one = 0
         step_two = 0
 
@@ -197,7 +199,12 @@ def press_off(key):
             exit()
         else:
             print("fermeture du programme")
-            winsound.PlaySound('son_fin.wav', winsound.SND_FILENAME)
+            pygame.mixer.init()
+            pygame.mixer.music.load('son_fin.mp3')
+            pygame.mixer.music.play()
+            time.sleep(0.0125)
+            pygame.mixer.music.play()
+            pygame.mixer.quit()
             # On enregistre et on ferme le fichier excel
             liste_enr = rf"C:\\Users\\Audio69\\Documents\\DocumentCalisto\\{nom_maison_retraite}\\ListeRef-{la_date_jour_save}-{nom_maison_retraite}-RhoneAlpesAuvergne-KPERREAUT.xlsx "
             wb.save(liste_enr)
