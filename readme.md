@@ -7,5 +7,5 @@ Dans les options de calisto il faut importer le bon template d'impression, qu'il
 dans menu/règlage/Configuration AC440/Configuration impression de la catégorie audiométrie tonale (
 partie audiomètre
 Il faut configurer dans calisto l'impression pdf par défaut menu/règlage/paramètre généraux/impression pdf
-Il faut un dossier DocumentsCalisto à l'endroit du calisto_report_path où modifier le path en conséquence
+Il faut un dossier DocumentsCalisto à l'endroit du chemin_calisto où modifier le path en conséquence
 Le dossier DocumentCalisto doit contenir un dossier au nom de l'EHPAD
