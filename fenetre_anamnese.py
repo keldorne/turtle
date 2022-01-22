@@ -6,7 +6,7 @@ class FenetreAnamnese(tk.Tk):
     # Constructeur
     def __init__(self):
         tk.Tk.__init__(self)
-        self.text_reponse = [0] * 15
+        self.text_reponse = [""] * 15
         self.les_items = []
         self.les_labels = []
         self.les_texts = []
@@ -29,6 +29,7 @@ class FenetreAnamnese(tk.Tk):
                 self.text_reponse[i] = self.les_items[i].get()
                 if self.text_reponse[i] == "":
                     print(f"remarque item {i} pas rempli")
+                    self.text_reponse[i] = ""
                 else:
                     print(self.text_reponse[i])
             else:
@@ -37,11 +38,13 @@ class FenetreAnamnese(tk.Tk):
                     print(self.text_reponse[i])
                 except:
                     print(f"La liste {i} pas rempli")
+                    self.text_reponse[i] = ""
         self.destroy()
 
     def creer_fenetre(self):
         # Paramètres initiaux
         self.resizable(False, False)
+        self.geometry('+250+295')
         self.title('Anamnèse')
 
         # Création des label
