@@ -4,7 +4,6 @@
 from fenetre_maisonretraite import FenetreDossierMaisonRetraite
 from fenetre_donnee import FenetreDonnee
 from fenetre_anamnese import FenetreAnamnese
-
 import keyboard
 from pynput.keyboard import *
 import time
@@ -183,7 +182,7 @@ def press_on(key):
         pygame.mixer.init()
         pygame.mixer.music.load('son_fin.mp3')
         pygame.mixer.music.play()
-        time.sleep(0,5)
+        time.sleep(0.5)
         pygame.mixer.music.play()
 
         step_one = 0
