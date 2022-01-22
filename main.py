@@ -23,9 +23,9 @@ global chemin_calisto, chemin_calisto_barre, dossier_sauvegarde, la_date_jour_sa
 chemin_calisto = r"C:\\Users\\Audio69\\Documents\\DocumentCalisto"
 chemin_liste_referent = r"C:\\Users\\Audio69\\Documents\\DocOdipro\\DocMaster\\Liste Referents.xlsx"
 dossier_sauvegarde = rf"C:\\Users\\Audio69\\Documents\\DocOdipro\\SynologyDrive\\Depistages"
-# os.makedirs(chemin_calisto)
-# os.makedirs(chemin_liste_referent)
-# os.makedirs(dossier_sauvegarde)
+os.makedirs(chemin_calisto)
+os.makedirs(chemin_liste_referent)
+os.makedirs(dossier_sauvegarde)
 ####
 
 
