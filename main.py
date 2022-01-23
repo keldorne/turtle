@@ -21,7 +21,7 @@ global chemin_calisto, chemin_calisto_barre, dossier_sauvegarde, la_date_jour_sa
 # Implémentation d'un mode test qui marche sur d'autre machine n'ayant ni l'arborescence ni les fichiers prérequis
 # Normal où test
 choix_mode = ""
-#choix_mode = "test"
+choix_mode = "test"
 
 ####
 # Path à modifier en fonction de votre configuration
