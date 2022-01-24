@@ -33,6 +33,13 @@ def main():
 if __name__ == '__main__':
     main()
 
+if choix_mode == "test":
+    try:
+        os.mkdir(Path("mode_test", "DocumentCalisto"))
+        os.mkdir(Path("mode_test", "Depistage"))
+    except:
+        pass
+
 
 ####
 # Path à modifier en fonction de votre configuration
