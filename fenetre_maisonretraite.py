@@ -2,13 +2,13 @@ import shutil
 import tkinter as tk
 import os
 from os import listdir
-
+from pathlib import Path
 
 class FenetreDossierMaisonRetraite(tk.Tk):
     def __init__(self, chemin_calisto):
         tk.Tk.__init__(self)
         self.nom_maison_retraite = []
-        self.chemin_calisto = chemin_calisto
+        self.chemin_calisto = Path(chemin_calisto)
         self.variable_etat_dossier = tk.StringVar()
         self.variable_etat_dossier.set(listdir(self.chemin_calisto))
         self.entry_maison_retraite = []
@@ -18,7 +18,7 @@ class FenetreDossierMaisonRetraite(tk.Tk):
     def bouton_creer(self):
         try:
             # On cré le dossier de la Maison de  retraite dans le dossier du Calisto
-            os.mkdir(self.chemin_calisto + f"\\{self.entry_maison_retraite.get()}")
+            os.mkdir(Path(self.chemin_calisto, self.entry_maison_retraite.get()))
             # On met à jour la fenetre
             self.nom_maison_retraite = self.entry_maison_retraite.get()
             # On enregistre le nom de la maison de retraite
