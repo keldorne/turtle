@@ -7,11 +7,11 @@ from pynput.keyboard import *
 import time
 import pyautogui
 import os
+import sys
 import pygame
 import openpyxl
 from datetime import datetime
 import shutil
-import sys
 from pathlib import Path
 
 # Variable globale pour gérer les étapes dans l'ordre
@@ -283,7 +283,7 @@ def press_on(key):
                 # On incrémente les variables
                 step_one = 0
                 step_two = 0
-                numero_patient = numero_patient + 1
+                numero_patient += 1
             else:
                 # on ferme la fiche note
                 pyautogui.click(709, 411)
@@ -325,7 +325,7 @@ def press_on(key):
                     # On incrémente les variables
                     step_one = 0
                     step_two = 0
-                    numero_patient = numero_patient + 1
+                    numero_patient += 1
                 else:
                     print("Le fichier à mal été enregistré")
         else:
