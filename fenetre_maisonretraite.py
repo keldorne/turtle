@@ -3,6 +3,8 @@ import tkinter as tk
 import os
 from os import listdir
 from pathlib import Path
+from ttkthemes import ThemedStyle
+from tkinter import ttk
 
 class FenetreDossierMaisonRetraite(tk.Tk):
     def __init__(self, chemin_calisto):
@@ -48,13 +50,22 @@ class FenetreDossierMaisonRetraite(tk.Tk):
         self.destroy()
 
     def creer_fenetre(self):
-        label_etat_dossier = tk.Label(self, text="Etat du dossier Calisto :")
-        label_de_letat = tk.Label(self, textvariable=self.variable_etat_dossier)
-        label_de_lentree = tk.Label(self, text="Entrez le nom de la maison de retraite")
-        self.entry_maison_retraite = tk.Entry(self, width=30)
-        bouton_creer = tk.Button(self, text="CREER DOSSIER", command=self.bouton_creer)
-        bouton_effacer = tk.Button(self, text="EFFACER DOSSIER", command=self.bouton_effacer)
-        bouton_enregistrer = tk.Button(self, text="ENREGISTRER", command=self.bouton_enregistrer)
+
+        # Theme fenetre
+        #self.title(bg = "white")
+        style = ThemedStyle(self)
+        style.theme_use('equilux')
+        bg = style.lookup('TLabel', 'background')
+        fg = style.lookup('TLabel', 'foreground')
+        self.configure(bg=style.lookup('TLabel', 'background'))
+
+        label_etat_dossier = ttk.Label(self, text="Etat du dossier Calisto :")
+        label_de_letat = ttk.Label(self, textvariable=self.variable_etat_dossier)
+        label_de_lentree = ttk.Label(self, text="Entrez le nom de la maison de retraite")
+        self.entry_maison_retraite = ttk.Entry(self, width=30)
+        bouton_creer = ttk.Button(self, text="CREER DOSSIER", command=self.bouton_creer)
+        bouton_effacer = ttk.Button(self, text="EFFACER DOSSIER", command=self.bouton_effacer)
+        bouton_enregistrer = ttk.Button(self, text="ENREGISTRER", command=self.bouton_enregistrer)
 
         label_etat_dossier.grid(row=0, column=0)
         label_de_letat.grid(row=0, column=1, columnspan=2)

@@ -1,3 +1,4 @@
+# coding: utf-8
 # Les bibliothèques importées
 from fenetre_maisonretraite import FenetreDossierMaisonRetraite
 from fenetre_donnee import FenetreDonnee
@@ -12,15 +13,35 @@ import pygame
 import openpyxl
 from datetime import datetime
 import shutil
+import sqlite3
 from pathlib import Path
 
 # Variable globale pour gérer les étapes dans l'ordre
 global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient, nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3
 global chemin_calisto, dossier_sauvegarde, la_date_jour_save, choix_mode
+# Variable globale pour l'enregistrement dans la base de donnée
+global nom_patients, prenom_patients, nom_accompagnants, prenom_accompagnants, telephone_accompagnants, mail_accompagnants, \
+    anamnese_db1, anamnese_db2, anamnese_db3, anamnese_db4, anamnese_db5, anamnese_db6, anamnese_db7, anamnese_db8, anamnese_db9, anamnese_db10
+nom_patients = [""]*50
+prenom_patients = [""]*50
+nom_accompagnants = [""]*50
+prenom_accompagnants = [""]*50
+telephone_accompagnants = [""]*50
+mail_accompagnants = [""]*50
+anamnese_db1 = [""]*50
+anamnese_db2 = [""]*50
+anamnese_db3 = [""]*50
+anamnese_db4 = [""]*50
+anamnese_db5 = [""]*50
+anamnese_db6 = [""]*50
+anamnese_db7 = [""]*50
+anamnese_db8 = [""]*50
+anamnese_db9 = [""]*50
+anamnese_db10 = [""]*50
 
 # Implémentation d'un mode test qui marche sur d'autre machine n'ayant ni l'arborescence ni les fichiers prérequis
 # Normal où test
-choix_mode = ""
+choix_mode = "test"
 
 
 def main():
@@ -60,7 +81,7 @@ duree = 0.1
 step_one = 0
 step_two = 0
 step_three = 0
-numero_patient = 1
+numero_patient = 0
 
 # Extraction du nom de dossier de la MR GUI pour vérifier l'état du dossier de l'audiomètre il doit contenir
 # uniquement le dossier vide avec nom de la maison de retraite 
@@ -89,7 +110,6 @@ elif ".pdf" in files_str or ".txt" in files_str:
 else:
     for files in files:
         nom_maison_retraite = app1.nom_maison_retraite
-
 # Fin de l'extraction du nom de dossier
 
 # On rempli la maison de retraite et la date du jour dans l'excel des référents
@@ -115,6 +135,15 @@ def press_on(key):
             prenom_accompagnant = app2.prenom_accompagnant
             telephone_accompagnant = app2.telephone_accompagnant
             mail_accompagnant = app2.mail_accompagnant
+
+            # On enregistre les informations pour la base de donnée
+            nom_patients[numero_patient] = app2.nom_patient
+            prenom_patients[numero_patient] = app2.prenom_patient
+            nom_accompagnants[numero_patient] = app2.nom_accompagnant
+            prenom_accompagnants[numero_patient] = app2.prenom_accompagnant
+            telephone_accompagnants[numero_patient] = app2.telephone_accompagnant
+            mail_accompagnants[numero_patient] = app2.mail_accompagnant
+
             if choix_mode == "test":
                 pass
             else:
@@ -201,11 +230,11 @@ def press_on(key):
                                     app3.text_reponse[3] + "\n"
 
                 # Ligne prise d'empreinte
-                if app3.text_reponse[4] == "" and app3.text_reponse[5] == "":
+                if app3.id_reponse[10] < 6 and app3.id_reponse[11] < 6:
                     pass
-                elif app3.text_reponse[4] == "":
+                elif app3.id_reponse[10] < 6 and app3.id_reponse[11] > 5:
                     text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
-                elif app3.text_reponse[5] == "":
+                elif app3.id_reponse[10] > 5 and app3.id_reponse[11] < 6:
                     text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[4] + "\n"
                 else:
                     text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[4] + ",  " + \
@@ -250,6 +279,21 @@ def press_on(key):
                 pyautogui.click(5, 461)
                 # pyautogui.dragTo(650, 1110, 0.2, button='left')
                 keyboard.write(text_a_copier)
+                # Enregistrement des informations de l'anamnèse pour la base de donnée
+
+            anamnese_db1[numero_patient] = app3.id_reponse[0]
+            print(app3.id_reponse[0])
+            print(anamnese_db1[numero_patient])
+            print(anamnese_db1)
+            anamnese_db2[numero_patient] = app3.text_reponse[1]
+            anamnese_db3[numero_patient] = app3.id_reponse[3]
+            anamnese_db4[numero_patient] = app3.id_reponse[2]
+            anamnese_db5[numero_patient] = app3.text_reponse[6]
+            anamnese_db6[numero_patient] = app3.text_reponse[7]
+            anamnese_db7[numero_patient] = app3.id_reponse[11]
+            anamnese_db8[numero_patient] = app3.id_reponse[10]
+            anamnese_db9[numero_patient] = app3.id_reponse[9]
+            anamnese_db10[numero_patient] = app3.id_reponse[8]
             step_two = 1
         else:
             print("Il faut compléter la premiere étape où finir la troisième étape")
@@ -265,21 +309,22 @@ def press_on(key):
                 file_newname_newfile = Path(chemin_calisto, nom_maison_retraite, nom_patient + "-" + prenom_patient + "-" + nom_maison_retraite + ".pdf")
                 shutil.move(file_oldname, file_newname_newfile)
                 # on met à jour le fichier excel avec identité patient et accompagnant
-                ws.cell(row=numero_patient + 3, column=2).value = nom_patient
-                ws.cell(row=numero_patient + 3, column=3).value = prenom_patient
-                ws.cell(row=numero_patient + 3, column=5).value = nom_accompagnant
-                ws.cell(row=numero_patient + 3, column=6).value = prenom_accompagnant
-                ws.cell(row=numero_patient + 3, column=7).value = telephone_accompagnant
-                ws.cell(row=numero_patient + 3, column=8).value = mail_accompagnant
+                ws.cell(row=numero_patient + 4, column=2).value = nom_patient
+                ws.cell(row=numero_patient + 4, column=3).value = prenom_patient
+                ws.cell(row=numero_patient + 4, column=5).value = nom_accompagnant
+                ws.cell(row=numero_patient + 4, column=6).value = prenom_accompagnant
+                ws.cell(row=numero_patient + 4, column=7).value = telephone_accompagnant
+                ws.cell(row=numero_patient + 4, column=8).value = mail_accompagnant
                 # on indique si il y a des empreintes
                 if app3.text_reponse[4] == "" and app3.text_reponse[5] == "":
-                    ws.cell(row=numero_patient + 3, column=9).value = "Aucune"
+                    ws.cell(row=numero_patient + 4, column=9).value = "Aucune"
                 elif app3.text_reponse[4] == "":
-                    ws.cell(row=numero_patient + 3, column=9).value = "OD"
+                    ws.cell(row=numero_patient + 4, column=9).value = "OD"
                 elif app3.text_reponse[5] == "":
-                    ws.cell(row=numero_patient + 3, column=9).value = "OG"
+                    ws.cell(row=numero_patient + 4, column=9).value = "OG"
                 else:
-                    ws.cell(row=numero_patient + 3, column=9).value = "ODG"
+                    ws.cell(row=numero_patient + 4, column=9).value = "ODG"
+
                 # On incrémente les variables
                 step_one = 0
                 step_two = 0
@@ -307,21 +352,22 @@ def press_on(key):
                     # on ferme la session
                     pyautogui.click(1897, 12)
                     # on met à jour le fichier excel avec identité patient et accompagnant
-                    ws.cell(row=numero_patient + 3, column=2).value = nom_patient
-                    ws.cell(row=numero_patient + 3, column=3).value = prenom_patient
-                    ws.cell(row=numero_patient + 3, column=5).value = nom_accompagnant
-                    ws.cell(row=numero_patient + 3, column=6).value = prenom_accompagnant
-                    ws.cell(row=numero_patient + 3, column=7).value = telephone_accompagnant
-                    ws.cell(row=numero_patient + 3, column=8).value = mail_accompagnant
+                    ws.cell(row=numero_patient + 4, column=2).value = nom_patient
+                    ws.cell(row=numero_patient + 4, column=3).value = prenom_patient
+                    ws.cell(row=numero_patient + 4, column=5).value = nom_accompagnant
+                    ws.cell(row=numero_patient + 4, column=6).value = prenom_accompagnant
+                    ws.cell(row=numero_patient + 4, column=7).value = telephone_accompagnant
+                    ws.cell(row=numero_patient + 4, column=8).value = mail_accompagnant
                     # on indique si il y a des empreintes
-                    if app3.text_reponse[4] == "" and app3.text_reponse[5] == "":
-                        ws.cell(row=numero_patient + 3, column=9).value = "Aucune"
-                    elif app3.text_reponse[4] == "":
-                        ws.cell(row=numero_patient + 3, column=9).value = "OD"
-                    elif app3.text_reponse[5] == "":
-                        ws.cell(row=numero_patient + 3, column=9).value = "OG"
+                    if app3.id_reponse[10] < 6 and app3.id_reponse[11] < 6:
+                        ws.cell(row=numero_patient + 4, column=9).value = "Aucune"
+                    elif app3.id_reponse[10] < 6 and app3.id_reponse[11] > 5:
+                        ws.cell(row=numero_patient + 4, column=9).value = "OD"
+                    elif app3.id_reponse[10] > 5 and app3.id_reponse[11] < 6:
+                        ws.cell(row=numero_patient + 4, column=9).value = "OG"
                     else:
-                        ws.cell(row=numero_patient + 3, column=9).value = "ODG"
+                        ws.cell(row=numero_patient + 4, column=9).value = "ODG"
+
                     # On incrémente les variables
                     step_one = 0
                     step_two = 0
@@ -375,6 +421,98 @@ def press_off(key):
             shutil.move(chemin_archive, dossier_maison_retraite_date)
             # On déplace le dossier avec les comptes rendus + fichier excel + version ziper recapitulatif dans le dossier de sauvegarde
             shutil.move(dossier_maison_retraite_date, dossier_sauvegarde_date)
+
+            # Ouverture de la base de donnée et initialisation de la table info maison retraite et création référent VIDE
+            connection = sqlite3.connect("../googlecontactAPI/test3.db")
+            cursor_maison_retraite = connection.cursor()
+            cursor_referent = connection.cursor()
+
+            try:
+                db_maison_retraite = (cursor_maison_retraite.lastrowid, nom_maison_retraite, "")
+                cursor_maison_retraite.execute('INSERT INTO INFO_MAISON_RETRAITE VALUES(?,?,?)', db_maison_retraite)
+                id_maison_retraite = cursor_maison_retraite.lastrowid
+                print(id_maison_retraite)
+            except Exception as e:
+                print("1erreur", e)
+                connection.rollback()
+                connection.close()
+
+                # Référent vide pour l'instant en attendant l'interfaçage avec API GOOGLE
+
+            try:
+                db_referent = (cursor_referent.lastrowid, id_maison_retraite, 2, "", "", "", "", "")
+                cursor_referent.execute('INSERT INTO INFO_HUMAIN VALUES(?,?,?,?,?,?,?,?)', db_referent)
+                id_referent = cursor_referent.lastrowid
+            except Exception as e:
+                print("2erreur", e)
+                connection.rollback()
+                connection.close()
+
+            try:
+                connection.commit()
+                connection.close()
+            except:
+                connection.close()
+
+            # Enregistrement de l'anamnèse, des patients, des accompagnants, des fiches patients dans la base de donnée
+
+            for i in range(2):
+                connection = sqlite3.connect("../googlecontactAPI/test3.db")
+                cursor2 = connection.cursor()
+                cursor3 = connection.cursor()
+                cursor4 = connection.cursor()
+                cursor5 = connection.cursor()
+                #Anamnese
+                try:
+                    db_info_anamnese = (
+                        cursor2.lastrowid, anamnese_db1[i], anamnese_db2[i], anamnese_db3[i], anamnese_db4[i],
+                        anamnese_db5[i], anamnese_db6[i],
+                        anamnese_db7[i], anamnese_db8[i], anamnese_db9[i], anamnese_db10[i], "", "")
+                    cursor2.execute('INSERT INTO INFO_ANAMNESE VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', db_info_anamnese)
+
+                    id_anamnese = cursor2.lastrowid
+                except Exception as e:
+                    print("erreur", e)
+                    connection.close()
+
+                # Patient
+                try:
+                    db_patient = (
+                    cursor3.lastrowid, id_maison_retraite, 0, nom_patients[i], prenom_patients[i], "", "", "")
+                    cursor3.execute('INSERT INTO INFO_HUMAIN VALUES(?,?,?,?,?,?,?,?)', db_patient)
+                    id_patient = cursor3.lastrowid
+                except Exception as e:
+                    print("erreur", e)
+                    connection.close()
+                # Accompagnant
+                try:
+                    db_accompagnant = (
+                    cursor4.lastrowid, id_maison_retraite, 1, nom_accompagnants[i], prenom_accompagnants[i], "",
+                    telephone_accompagnants[i], mail_accompagnants[i])
+                    cursor4.execute('INSERT INTO INFO_HUMAIN VALUES(?,?,?,?,?,?,?,?)', db_accompagnant)
+                    id_accompagnant = cursor4.lastrowid
+                except Exception as e:
+                    print("erreur", e)
+                    connection.close()
+
+                # Fiche patient
+                try:
+                    db_fiche_patient = (
+                    cursor5.lastrowid, id_patient, id_accompagnant, id_referent, id_anamnese, la_date_jour_save, "", "",
+                    "")
+                    cursor5.execute('INSERT INTO FICHE_PATIENT VALUES(?,?,?,?,?,?,?,?,?)', db_fiche_patient)
+                    id_fiche_patient = cursor5.lastrowid
+                except Exception as e:
+                    print("erreur", e)
+                    connection.close()
+
+                try:
+                    connection.commit()
+                    connection.close()
+                except:
+                    connection.close()
+
+            connection.close()
             exit()
             return 0
 

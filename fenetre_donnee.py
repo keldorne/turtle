@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import END
+from tkinter import ttk
+from ttkthemes import ThemedStyle
 
 
 class FenetreDonnee(tk.Tk):
@@ -60,6 +62,12 @@ class FenetreDonnee(tk.Tk):
         self.resizable(False, False)
         self.geometry('+600+750')
         self.title('Coordonnées patient/accompagnant')
+        # Theme fenetre
+        style = ThemedStyle(self)
+        style.theme_use('equilux')
+        bg = style.lookup('TLabel', 'background')
+        fg = style.lookup('TLabel', 'foreground')
+        self.configure(bg=style.lookup('TLabel', 'background'))
 
         # Création des labels
         label_nom_patient = tk.Label(self, text="Nom patient :")

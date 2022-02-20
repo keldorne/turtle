@@ -7,6 +7,7 @@ class FenetreAnamnese(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.text_reponse = [""] * 15
+        self.id_reponse = [""] * 15
         self.les_items = []
         self.les_labels = []
         self.les_texts = []
@@ -35,10 +36,12 @@ class FenetreAnamnese(tk.Tk):
             else:
                 try:
                     self.text_reponse[i] = self.les_items[i].get(self.les_items[i].curselection()[0])
+                    self.id_reponse[i] = self.les_items[i].curselection()[0]
                     print(self.text_reponse[i])
                 except:
                     print(f"La liste {i} pas rempli")
                     self.text_reponse[i] = ""
+                    self.id_reponse[i] = ""
         self.destroy()
 
     def creer_fenetre(self):
@@ -51,6 +54,7 @@ class FenetreAnamnese(tk.Tk):
         label_cognition = tk.Label(self, text="Cognition :")
         label_dejaappareille = tk.Label(self, text="Patient déjà appareillé :")
         label_otoscopie = tk.Label(self, text="Otoscopie :")
+        # On déclare mais on n'utlise pas la validation de prise d'empreinte
         label_prisedempreinte = tk.Label(self, text="Prise d'empreinte :")
         label_remarque = tk.Label(self, text="Remarques :")
         label_avisduresident = tk.Label(self, text="Avis du résident (Si possible) :")
@@ -61,7 +65,7 @@ class FenetreAnamnese(tk.Tk):
         bouton_fin = tk.Button(self, text="Enregistrer", command=self.resultat_recolteur)
         bouton_clear = tk.Button(self, text="Tout effacer", command=self.fenetre_clear)
 
-        # Création des entrée
+        # Création des entrées
         list_cognition = tk.Listbox(self, height=5, width=25, exportselection=0)
         list_cognition.insert(1, "Bonne")
         list_cognition.insert(2, "Moyenne")
@@ -84,6 +88,7 @@ class FenetreAnamnese(tk.Tk):
         list_otoscopieOD.insert(2, "Cerumen gênant OD")
         list_otoscopieOD.insert(3, "Bouchon OD")
 
+        # On déclare mais on n'utlise pas la validation de prise d'empreinte
         list_prisedempreinteOG = tk.Listbox(self, height=3, width=25, exportselection=0)
         list_prisedempreinteOG.insert(1, "OUI OG")
         list_prisedempreinteOG.insert(2, "NON OG")
@@ -132,7 +137,8 @@ class FenetreAnamnese(tk.Tk):
         label_cognition.grid(row=0, column=0)
         label_dejaappareille.grid(row=1, column=0)
         label_otoscopie.grid(row=2, column=0)
-        label_prisedempreinte.grid(row=3, column=0)
+        # On n'affiche pas la validation de l'empreinte
+        # label_prisedempreinte.grid(row=3, column=0)
         label_remarque.grid(row=4, column=0)
         label_avisduresident.grid(row=5, column=0)
         label_conseildappareillage.grid(row=6, column=0)
@@ -142,8 +148,9 @@ class FenetreAnamnese(tk.Tk):
         list_dejaappareille.grid(row=1, column=1)
         list_otoscopieOG.grid(row=2, column=1)
         list_otoscopieOD.grid(row=2, column=2)
-        list_prisedempreinteOG.grid(row=3, column=1)
-        list_prisedempreinteOD.grid(row=3, column=2)
+        # On n'affiche pas la validation de l'empreinte
+        # list_prisedempreinteOG.grid(row=3, column=1)
+        # list_prisedempreinteOD.grid(row=3, column=2)
         entry_remarque.grid(row=4, column=1, columnspan=2)
         list_avisduresident.grid(row=5, column=1)
         list_conseildappareillageOG.grid(row=6, column=1)
