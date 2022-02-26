@@ -15,14 +15,14 @@ class FenetreDossierMaisonRetraite(tk.Tk):
         self.variable_etat_dossier.set(listdir(self.chemin_calisto))
         self.entry_maison_retraite = []
         self.label_de_letat = []
+        self.type_depistage =[]
         self.creer_fenetre()
 
     def bouton_creer(self):
         try:
-            # On cré le dossier de la Maison de  retraite dans le dossier du Calisto
-            os.mkdir(Path(self.chemin_calisto, self.entry_maison_retraite.get()))
-            # On met à jour la fenetre
-            self.nom_maison_retraite = self.entry_maison_retraite.get()
+            self.nom_maison_retraite = "MR "+ self.entry_maison_retraite.get().upper()
+            # On cré le dossier de la Maison de retraite dans le dossier du Calisto
+            os.mkdir(Path(self.chemin_calisto, self.nom_maison_retraite))
             # On enregistre le nom de la maison de retraite
             self.variable_etat_dossier.set(listdir(self.chemin_calisto))
         except:
@@ -74,3 +74,11 @@ class FenetreDossierMaisonRetraite(tk.Tk):
         bouton_creer.grid(row=2, column=0)
         bouton_effacer.grid(row=2, column=1)
         bouton_enregistrer.grid(row=2, column=2)
+
+"""
+chemin_calisto = Path(Path(__file__).parent.absolute(), "mode_test", "DocumentCalisto")
+chemin_liste_referent = Path(Path(__file__).parent.absolute(), "mode_test", "fichier_test", "Liste Referents.xlsx")
+dossier_sauvegarde = Path(Path(__file__).parent.absolute(), "mode_test", "Depistages")
+app1 = FenetreDossierMaisonRetraite(chemin_calisto)
+app1.mainloop()
+"""

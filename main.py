@@ -15,13 +15,15 @@ from datetime import datetime
 import shutil
 import sqlite3
 from pathlib import Path
+import pickle
 
 # Variable globale pour gérer les étapes dans l'ordre
 global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient, nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3
 global chemin_calisto, dossier_sauvegarde, la_date_jour_save, choix_mode
 # Variable globale pour l'enregistrement dans la base de donnée
-global nom_patients, prenom_patients, nom_accompagnants, prenom_accompagnants, telephone_accompagnants, mail_accompagnants, \
-    anamnese_db1, anamnese_db2, anamnese_db3, anamnese_db4, anamnese_db5, anamnese_db6, anamnese_db7, anamnese_db8, anamnese_db9, anamnese_db10
+global nom_patients, prenom_patients, nom_accompagnants, prenom_accompagnants, telephone_accompagnants,\
+    mail_accompagnants, anamnese_db1, anamnese_db2, anamnese_db3, anamnese_db4, anamnese_db5, anamnese_db6,\
+    anamnese_db7, anamnese_db8, anamnese_db9, anamnese_db10, anamnese_db11, empreinte_OD, empreinte_OG
 nom_patients = [""]*50
 prenom_patients = [""]*50
 nom_accompagnants = [""]*50
@@ -38,10 +40,11 @@ anamnese_db7 = [""]*50
 anamnese_db8 = [""]*50
 anamnese_db9 = [""]*50
 anamnese_db10 = [""]*50
+anamnese_db11 = [""]*50
 
 # Implémentation d'un mode test qui marche sur d'autre machine n'ayant ni l'arborescence ni les fichiers prérequis
 # Normal où test
-choix_mode = "test"
+choix_mode = ""
 
 
 def main():
@@ -123,7 +126,9 @@ ws.cell(row=2, column=7).value = la_date_jour_save
 
 # Fonction principale qui détecte les touches du clavier
 def press_on(key):
-    global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient, nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3
+    global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient,\
+        nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3, empreinte_OD,\
+        empreinte_OG
     if key == Key.f9:
         if step_one == 0 and step_two == 0 and step_three == 0:
             # On ouvre la fenetre permettant d'entrer les données patient et accompagnant
@@ -147,46 +152,51 @@ def press_on(key):
             if choix_mode == "test":
                 pass
             else:
-                # Première étape on récupère nom prénom et on allume Calisto
-                # Clic fichier
-                pyautogui.click(42, 34)
-                time.sleep(duree)
-                # Clic Ajouter nouveau patient
-                pyautogui.click(118, 99)
-                time.sleep(duree)
-                # Clic Nom patient + remplissage
-                pyautogui.click(750, 232)
-                time.sleep(duree)
-                keyboard.write(nom_patient)
-                time.sleep(duree)
-                # CLic Prénom patient + remplissage
-                pyautogui.click(1149, 232)
-                time.sleep(duree)
-                keyboard.write(prenom_patient)
-                time.sleep(duree)
-                # Selection sexe patient
-                if app2.sexe_patient == "Homme":
-                    pyautogui.click(1153, 267)
+                if app2.comportement == 1:
+                    # Première étape on récupère nom prénom et on allume Calisto
+                    # Clic fichier
+                    pyautogui.click(42, 34)
+                    time.sleep(duree)
+                    # Clic Ajouter nouveau patient
+                    pyautogui.click(118, 99)
+                    time.sleep(duree)
+                    # Clic Nom patient + remplissage
+                    pyautogui.click(750, 232)
+                    time.sleep(duree)
+                    keyboard.write(nom_patient.upper())
+                    time.sleep(duree)
+                    # CLic Prénom patient + remplissage
+                    pyautogui.click(1149, 232)
+                    time.sleep(duree)
+                    keyboard.write(prenom_patient.title())
+                    time.sleep(duree)
+                    # Selection sexe patient
+                    if app2.sexe_patient == "Homme":
+                        pyautogui.click(1153, 267)
+                    else:
+                        pyautogui.click(1239, 268)
+                    time.sleep(duree)
+                    # On enregistre la fiche patient
+                    pyautogui.click(1111, 874)
+                    time.sleep(duree)
                 else:
-                    pyautogui.click(1239, 268)
-                time.sleep(duree)
-                # On enregistre la fiche patient
-                pyautogui.click(1111, 874)
-                time.sleep(duree)
-                # On clique sur la barre de recherche
-                pyautogui.click(22, 171)
-                time.sleep(duree)
-                # On colle le prénom et le nom du patient
-                prenom_nom_patient = [prenom_patient + "  " + nom_patient]
-                keyboard.write(prenom_nom_patient)
-                time.sleep(0.6)
-                # Selection fiche
-                pyautogui.click(52, 340)
-                time.sleep(0.6)
-                pyautogui.click(118, 337)
-                time.sleep(0.6)
-                # On ouvre le programme Calisto
-                pyautogui.click(103, 74)
+                    pass
+
+                if app2.comportement == 1 or app2.comportement == 2:
+                    # On clique sur la barre de recherche
+                    pyautogui.click(22, 171)
+                    time.sleep(duree)
+                    # On colle le prénom et le nom du patient
+                    prenom_nom_patient = [prenom_patient.title() + "  " + nom_patient.capitalize()]
+                    keyboard.write(prenom_nom_patient)
+                    time.sleep(1.5)
+                    # Selection fiche
+                    pyautogui.click(52, 340)
+                    time.sleep(0.6)
+                    pyautogui.click(118, 337)
+                    time.sleep(0.6)
+                    # On ouvre le programme Calisto
+                    pyautogui.click(103, 74)
             # On valide la première étape
             step_one = 1
 
@@ -209,71 +219,90 @@ def press_on(key):
                 # On integre le nom de la maison de retraite au debut du texte
                 text_a_copier = "Etablissement : " + app1.nom_maison_retraite + "\n" + "\n"
 
-                # Ligne cognition
-                text_a_copier = text_a_copier + "   " + app3.les_texts[0] + "  " + app3.text_reponse[0] + "\n"
-
-                # Ligne déjà appareillé
-                if app3.text_reponse[1] == "":
-                    pass
+                if app3.text_reponse[0] == "Refuse le dépistage":
+                    text_a_copier = text_a_copier + "   Refus d'effectuer le dépistage" + "\n"
+                    # Ligne remarque
+                    if app3.text_reponse[5] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " Aucune" + "\n"
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
                 else:
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[1] + " " + app3.text_reponse[1] + "\n"
 
-                # Ligne otoscopie
-                if app3.text_reponse[2] == "" and app3.text_reponse[3] == "":
-                    pass
-                elif app3.text_reponse[2] == "":
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[3] + "\n"
-                elif app3.text_reponse[3] == "":
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[2] + "\n"
-                else:
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[2] + ",  " + \
-                                    app3.text_reponse[3] + "\n"
 
-                # Ligne prise d'empreinte
-                if app3.id_reponse[10] < 6 and app3.id_reponse[11] < 6:
-                    pass
-                elif app3.id_reponse[10] < 6 and app3.id_reponse[11] > 5:
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
-                elif app3.id_reponse[10] > 5 and app3.id_reponse[11] < 6:
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[4] + "\n"
-                else:
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[4] + ",  " + \
-                                    app3.text_reponse[5] + "\n"
+                    # Ligne cognition
+                    if app3.text_reponse[1] == "":
+                        pass
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[0] + "  " + app3.text_reponse[1] + "\n"
 
-                # Ligne remarque
-                if app3.text_reponse[6] == "":
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[4] + " Aucune" + "\n"
-                else:
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[4] + " " + app3.text_reponse[6] + "\n"
+                    # Ligne déjà appareillé
+                    if app3.text_reponse[2] == "":
+                        pass
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[1] + " " + app3.text_reponse[2] + "\n"
 
-                # Ligne avis
-                if app3.text_reponse[7] == "":
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[
-                        5] + " Impossible de receuillir une réponse" + "\n"
-                else:
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[5] + " " + app3.text_reponse[7] + "\n"
+                    # Ligne otoscopie
+                    if app3.text_reponse[3] == "" and app3.text_reponse[4] == "":
+                        pass
+                    elif app3.text_reponse[3] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[4] + "\n"
+                    elif app3.text_reponse[4] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[3] + "\n"
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[3] + ",  " + \
+                                    app3.text_reponse[4] + "\n"
 
-                # Ligne conseil d'appareillage
-                if app3.text_reponse[8] == "" and app3.text_reponse[9] == "":
-                    pass
-                elif app3.text_reponse[8] == "":
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[6] + " " + app3.text_reponse[9] + "\n"
-                elif app3.text_reponse[9] == "":
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[6] + " " + app3.text_reponse[8] + "\n"
-                else:
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[6] + " " + app3.text_reponse[8] + ",  " + \
-                                    app3.text_reponse[9] + "\n"
+                    # Décision empreinte gestion dans le cas où il n'y aurait pas d'appareil auditif du tout
+                    empreinte_OG = app3.id_reponse[9]
+                    empreinte_OD = app3.id_reponse[10]
+                    if empreinte_OG == "":
+                        empreinte_OG = 1
+                    if empreinte_OD == "":
+                        empreinte_OD = 1
+                    # Ligne prise d'empreinte
 
-                # Ligne choix dome embout
-                if app3.text_reponse[10] == "" and app3.text_reponse[11] == "":
-                    pass
-                elif app3.text_reponse[10] == "":
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[7] + " " + app3.text_reponse[11] + "\n"
-                elif app3.text_reponse[11] == "":
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[7] + " " + app3.text_reponse[10] + "\n"
-                else:
-                    text_a_copier = text_a_copier + "   " + app3.les_texts[7] + " " + app3.text_reponse[10] + ",  " + \
-                                    app3.text_reponse[11] + "\n"
+                    if empreinte_OG < 6 and empreinte_OD < 6:
+                        pass
+                    elif empreinte_OG < 6 and empreinte_OD > 5:
+                        text_a_copier = text_a_copier + "   Empreinte : OD" + "\n"
+                    elif empreinte_OG > 5 and empreinte_OD < 6:
+                        text_a_copier = text_a_copier + "   Empreinte : OG" + "\n"
+                    elif empreinte_OG > 5 and empreinte_OD > 5:
+                        text_a_copier = text_a_copier + "   Empreintes : OG + OD" + "\n"
+
+                    # Ligne remarque
+                    if app3.text_reponse[5] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " Aucune" + "\n"
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
+
+                    # Ligne avis
+                    if app3.text_reponse[6] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[4] + " Impossible de receuillir une réponse" + "\n"
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[4] + " " + app3.text_reponse[6] + "\n"
+
+                    # Ligne conseil d'appareillage
+                    if app3.text_reponse[7] == "" and app3.text_reponse[8] == "":
+                        pass
+                    elif app3.text_reponse[7] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[5] + " " + app3.text_reponse[8] + "\n"
+                    elif app3.text_reponse[8] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[5] + " " + app3.text_reponse[7] + "\n"
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[5] + " " + app3.text_reponse[7] + ",  " + \
+                                        app3.text_reponse[8] + "\n"
+
+                    # Ligne choix dome embout
+                    if app3.text_reponse[9] == "" and app3.text_reponse[10] == "":
+                        pass
+                    elif app3.text_reponse[9] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[6] + " " + app3.text_reponse[10] + "\n"
+                    elif app3.text_reponse[10] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[6] + " " + app3.text_reponse[9] + "\n"
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[6] + " " + app3.text_reponse[9] + ",  " + \
+                                        app3.text_reponse[10] + "\n"
 
                 print(text_a_copier)
                 pyautogui.click(5, 461)
@@ -282,18 +311,16 @@ def press_on(key):
                 # Enregistrement des informations de l'anamnèse pour la base de donnée
 
             anamnese_db1[numero_patient] = app3.id_reponse[0]
-            print(app3.id_reponse[0])
-            print(anamnese_db1[numero_patient])
-            print(anamnese_db1)
-            anamnese_db2[numero_patient] = app3.text_reponse[1]
-            anamnese_db3[numero_patient] = app3.id_reponse[3]
-            anamnese_db4[numero_patient] = app3.id_reponse[2]
-            anamnese_db5[numero_patient] = app3.text_reponse[6]
-            anamnese_db6[numero_patient] = app3.text_reponse[7]
-            anamnese_db7[numero_patient] = app3.id_reponse[11]
+            anamnese_db2[numero_patient] = app3.id_reponse[1]
+            anamnese_db3[numero_patient] = app3.text_reponse[2]
+            anamnese_db4[numero_patient] = app3.id_reponse[4]
+            anamnese_db5[numero_patient] = app3.id_reponse[3]
+            anamnese_db6[numero_patient] = app3.text_reponse[5]
+            anamnese_db7[numero_patient] = app3.text_reponse[6]
             anamnese_db8[numero_patient] = app3.id_reponse[10]
             anamnese_db9[numero_patient] = app3.id_reponse[9]
             anamnese_db10[numero_patient] = app3.id_reponse[8]
+            anamnese_db11[numero_patient] = app3.id_reponse[7]
             step_two = 1
         else:
             print("Il faut compléter la premiere étape où finir la troisième étape")
@@ -316,13 +343,13 @@ def press_on(key):
                 ws.cell(row=numero_patient + 4, column=7).value = telephone_accompagnant
                 ws.cell(row=numero_patient + 4, column=8).value = mail_accompagnant
                 # on indique si il y a des empreintes
-                if app3.text_reponse[4] == "" and app3.text_reponse[5] == "":
+                if empreinte_OG < 6 and empreinte_OD < 6:
                     ws.cell(row=numero_patient + 4, column=9).value = "Aucune"
-                elif app3.text_reponse[4] == "":
+                elif empreinte_OG < 6 and empreinte_OD > 5:
                     ws.cell(row=numero_patient + 4, column=9).value = "OD"
-                elif app3.text_reponse[5] == "":
+                elif empreinte_OG > 5 and empreinte_OD < 6:
                     ws.cell(row=numero_patient + 4, column=9).value = "OG"
-                else:
+                elif empreinte_OG > 5 and empreinte_OD > 5:
                     ws.cell(row=numero_patient + 4, column=9).value = "ODG"
 
                 # On incrémente les variables
@@ -351,21 +378,24 @@ def press_on(key):
                     shutil.move(file_oldname, file_newname_newfile)
                     # on ferme la session
                     pyautogui.click(1897, 12)
+                    time.sleep(0.1)
+                    # on remet la souris au milieu haut de l'écran
+                    pyautogui.moveTo(1000, 350)
                     # on met à jour le fichier excel avec identité patient et accompagnant
-                    ws.cell(row=numero_patient + 4, column=2).value = nom_patient
-                    ws.cell(row=numero_patient + 4, column=3).value = prenom_patient
-                    ws.cell(row=numero_patient + 4, column=5).value = nom_accompagnant
-                    ws.cell(row=numero_patient + 4, column=6).value = prenom_accompagnant
+                    ws.cell(row=numero_patient + 4, column=2).value = nom_patient.upper()
+                    ws.cell(row=numero_patient + 4, column=3).value = prenom_patient.upper()
+                    ws.cell(row=numero_patient + 4, column=5).value = nom_accompagnant.upper()
+                    ws.cell(row=numero_patient + 4, column=6).value = prenom_accompagnant.upper()
                     ws.cell(row=numero_patient + 4, column=7).value = telephone_accompagnant
-                    ws.cell(row=numero_patient + 4, column=8).value = mail_accompagnant
+                    ws.cell(row=numero_patient + 4, column=8).value = mail_accompagnant.lower()
                     # on indique si il y a des empreintes
-                    if app3.id_reponse[10] < 6 and app3.id_reponse[11] < 6:
+                    if empreinte_OG < 6 and empreinte_OD < 6:
                         ws.cell(row=numero_patient + 4, column=9).value = "Aucune"
-                    elif app3.id_reponse[10] < 6 and app3.id_reponse[11] > 5:
+                    elif empreinte_OG < 6 and empreinte_OD > 5:
                         ws.cell(row=numero_patient + 4, column=9).value = "OD"
-                    elif app3.id_reponse[10] > 5 and app3.id_reponse[11] < 6:
+                    elif empreinte_OG > 5 and empreinte_OD < 6:
                         ws.cell(row=numero_patient + 4, column=9).value = "OG"
-                    else:
+                    elif empreinte_OG > 5 and empreinte_OD > 5:
                         ws.cell(row=numero_patient + 4, column=9).value = "ODG"
 
                     # On incrémente les variables
@@ -383,9 +413,20 @@ def press_on(key):
     if key == Key.f5:
         print("On reinitialise les etapes")
         pygame.mixer.init()
-        pygame.mixer.music.load('son_fin.mp3')
+        pygame.mixer.music.load('files/son_fin.mp3')
         pygame.mixer.music.play()
+        time.sleep(0.5)
         step_one = 0
+        step_two = 0
+
+    if key == Key.f6:
+        print("On reinitialise l'étape 2")
+        pygame.mixer.init()
+        pygame.mixer.music.load('files/son_fin.mp3')
+        pygame.mixer.music.play()
+        time.sleep(0.5)
+        pygame.mixer.music.play()
+        time.sleep(0.5)
         step_two = 0
 
 
@@ -399,16 +440,19 @@ def press_off(key):
         else:
             print("fermeture du programme")
             pygame.mixer.init()
-            pygame.mixer.music.load('son_fin.mp3')
+            pygame.mixer.music.load('files/son_fin.mp3')
             pygame.mixer.music.play()
             time.sleep(0.5)
             pygame.mixer.music.play()
+            time.sleep(0.5)
+            pygame.mixer.music.play()
+            time.sleep(0.5)
             pygame.mixer.quit()
             # On enregistre le fichier excel dans le dossier de la maison de retraite
-            liste_enregistre = Path(chemin_calisto, nom_maison_retraite, "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "-RhoneAlpesAuvergne-KPERREAUT.xlsx")
+            liste_enregistre = Path(chemin_calisto, nom_maison_retraite, "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "KPERREAUT.xlsx")
             wb.save(liste_enregistre)
             # On renomme le dossier de la maison de retraite avec date jour zone
-            nom_dossier_sauvegarde = nom_maison_retraite + "-" + datetime.today().strftime('%d-%m-%Y')
+            nom_dossier_sauvegarde = nom_maison_retraite + "-" + datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
             dossier_maison_retraite = Path(chemin_calisto, nom_maison_retraite)
             dossier_maison_retraite_date = Path(chemin_calisto, nom_dossier_sauvegarde)
             dossier_sauvegarde_date = Path(dossier_sauvegarde, nom_dossier_sauvegarde)
@@ -423,7 +467,7 @@ def press_off(key):
             shutil.move(dossier_maison_retraite_date, dossier_sauvegarde_date)
 
             # Ouverture de la base de donnée et initialisation de la table info maison retraite et création référent VIDE
-            connection = sqlite3.connect("../googlecontactAPI/test3.db")
+            connection = sqlite3.connect("files/test3.db")
             cursor_maison_retraite = connection.cursor()
             cursor_referent = connection.cursor()
 
@@ -457,7 +501,7 @@ def press_off(key):
             # Enregistrement de l'anamnèse, des patients, des accompagnants, des fiches patients dans la base de donnée
 
             for i in range(2):
-                connection = sqlite3.connect("../googlecontactAPI/test3.db")
+                connection = sqlite3.connect("files/test3.db")
                 cursor2 = connection.cursor()
                 cursor3 = connection.cursor()
                 cursor4 = connection.cursor()
@@ -467,8 +511,8 @@ def press_off(key):
                     db_info_anamnese = (
                         cursor2.lastrowid, anamnese_db1[i], anamnese_db2[i], anamnese_db3[i], anamnese_db4[i],
                         anamnese_db5[i], anamnese_db6[i],
-                        anamnese_db7[i], anamnese_db8[i], anamnese_db9[i], anamnese_db10[i], "", "")
-                    cursor2.execute('INSERT INTO INFO_ANAMNESE VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', db_info_anamnese)
+                        anamnese_db7[i], anamnese_db8[i], anamnese_db9[i], anamnese_db10[i], anamnese_db11[i], "", "")
+                    cursor2.execute('INSERT INTO INFO_ANAMNESE VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', db_info_anamnese)
 
                     id_anamnese = cursor2.lastrowid
                 except Exception as e:
@@ -478,7 +522,7 @@ def press_off(key):
                 # Patient
                 try:
                     db_patient = (
-                    cursor3.lastrowid, id_maison_retraite, 0, nom_patients[i], prenom_patients[i], "", "", "")
+                    cursor3.lastrowid, id_maison_retraite, 0, nom_patients[i].upper(), prenom_patients[i].upper(), "", "", "")
                     cursor3.execute('INSERT INTO INFO_HUMAIN VALUES(?,?,?,?,?,?,?,?)', db_patient)
                     id_patient = cursor3.lastrowid
                 except Exception as e:
@@ -487,7 +531,7 @@ def press_off(key):
                 # Accompagnant
                 try:
                     db_accompagnant = (
-                    cursor4.lastrowid, id_maison_retraite, 1, nom_accompagnants[i], prenom_accompagnants[i], "",
+                    cursor4.lastrowid, id_maison_retraite, 1, nom_accompagnants[i].upper(), prenom_accompagnants[i].upper(), "",
                     telephone_accompagnants[i], mail_accompagnants[i])
                     cursor4.execute('INSERT INTO INFO_HUMAIN VALUES(?,?,?,?,?,?,?,?)', db_accompagnant)
                     id_accompagnant = cursor4.lastrowid
@@ -497,10 +541,8 @@ def press_off(key):
 
                 # Fiche patient
                 try:
-                    db_fiche_patient = (
-                    cursor5.lastrowid, id_patient, id_accompagnant, id_referent, id_anamnese, la_date_jour_save, "", "",
-                    "")
-                    cursor5.execute('INSERT INTO FICHE_PATIENT VALUES(?,?,?,?,?,?,?,?,?)', db_fiche_patient)
+                    db_fiche_patient = (cursor5.lastrowid, id_patient, id_accompagnant, id_referent, id_anamnese, la_date_jour_save, "", "", "", "", "")
+                    cursor5.execute('INSERT INTO FICHE_PATIENT VALUES(?,?,?,?,?,?,?,?,?,?,?)', db_fiche_patient)
                     id_fiche_patient = cursor5.lastrowid
                 except Exception as e:
                     print("erreur", e)

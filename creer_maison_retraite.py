@@ -1,10 +1,11 @@
+# coding: utf-8
 import tkinter as tk
 from pathlib import Path
 from ttkthemes import ThemedStyle
 from tkinter import ttk
 from tkinter import END
 import sqlite3
-from Google import create_service
+from files.Google import create_service
 
 class fenetreCreationContact(tk.Tk):
     def __init__(self):
@@ -27,9 +28,8 @@ class fenetreCreationContact(tk.Tk):
             print("Erreur d'enregistrement dans la classe")
 
         # On enregistre dans la base de donnée
-        connection = sqlite3.connect("test3.db")
         try:
-            connection = sqlite3.connect("test3.db")
+            connection = sqlite3.connect(Path("files", "files/test3.db"))
             cursor_maison_retraite = connection.cursor()
             cursor_referent = connection.cursor()
             db_maison_retraite = (cursor_maison_retraite.lastrowid, self.nom_maison_retraite, self.adresse_postale)

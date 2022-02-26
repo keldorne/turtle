@@ -1,16 +1,20 @@
+# coding: utf-8
 import tkinter as tk
 from tkinter import END
+import pickle
 
 
 class FenetreAnamnese(tk.Tk):
     # Constructeur
     def __init__(self):
         tk.Tk.__init__(self)
-        self.text_reponse = [""] * 15
-        self.id_reponse = [""] * 15
+        self.text_reponse = [""] * 11
+        self.id_reponse = [""] * 11
         self.les_items = []
         self.les_labels = []
         self.les_texts = []
+        self.sauvegarde = []
+        self.remarque = tk.StringVar()
         self.creer_fenetre()
 
     # Définition du bouton tout effacer
@@ -26,7 +30,7 @@ class FenetreAnamnese(tk.Tk):
     # Définition du bouton enregistrer
     def resultat_recolteur(self):
         for i in range(len(self.les_items)):
-            if i == 6:
+            if i == 5:
                 self.text_reponse[i] = self.les_items[i].get()
                 if self.text_reponse[i] == "":
                     print(f"remarque item {i} pas rempli")
@@ -42,7 +46,29 @@ class FenetreAnamnese(tk.Tk):
                     print(f"La liste {i} pas rempli")
                     self.text_reponse[i] = ""
                     self.id_reponse[i] = ""
+        self.sauvegarde = self.id_reponse
+        self.sauvegarde[5] = self.text_reponse[5]
+        pickle.dump(self.sauvegarde, open("files/temp_fenetre_anamnese.dat", "wb"))
         self.destroy()
+
+    def recuperation(self):
+        sauvegarde = pickle.load(open("files/temp_fenetre_anamnese.dat", "rb"))
+        print(sauvegarde)
+        self.les_items[0].selection_clear(0, END)
+        for i in range(len(self.les_items)):
+            if i == 5:
+                try:
+                    self.remarque.set(sauvegarde[i])
+                except Exception as e:
+                    print(e)
+            else:
+                try:
+                    self.les_items[i].select_set(sauvegarde[i])
+                    self.les_items[i].event_generate("<<ListboxSelect>>")
+                except Exception as e:
+                    print(e)
+
+
 
     def creer_fenetre(self):
         # Paramètres initiaux
@@ -50,7 +76,8 @@ class FenetreAnamnese(tk.Tk):
         self.geometry('+250+295')
         self.title('Anamnèse')
 
-        # Création des label
+        # Création des labels
+        label_acceptation = tk.Label(self, text="Acceptation du dépistage :")
         label_cognition = tk.Label(self, text="Cognition :")
         label_dejaappareille = tk.Label(self, text="Patient déjà appareillé :")
         label_otoscopie = tk.Label(self, text="Otoscopie :")
@@ -62,10 +89,17 @@ class FenetreAnamnese(tk.Tk):
         label_dome_embout = tk.Label(self, text="Choix dome/embout")
 
         # Création des boutons
-        bouton_fin = tk.Button(self, text="Enregistrer", command=self.resultat_recolteur)
+        bouton_creer_contact_open = tk.Button(self, text="Enregistrer", command=self.resultat_recolteur)
         bouton_clear = tk.Button(self, text="Tout effacer", command=self.fenetre_clear)
+        bouton_recuperer = tk.Button(self, text="Recuperer", command=self.recuperation)
 
         # Création des entrées
+        list_acceptation = tk.Listbox(self, height=3, width=25)
+        list_acceptation.insert(1, "Accepte le dépistage")
+        list_acceptation.insert(2, "Refuse le dépistage")
+        list_acceptation.select_set(0)
+        list_acceptation.event_generate("<<ListboxSelect>>")
+
         list_cognition = tk.Listbox(self, height=5, width=25, exportselection=0)
         list_cognition.insert(1, "Bonne")
         list_cognition.insert(2, "Moyenne")
@@ -88,16 +122,7 @@ class FenetreAnamnese(tk.Tk):
         list_otoscopieOD.insert(2, "Cerumen gênant OD")
         list_otoscopieOD.insert(3, "Bouchon OD")
 
-        # On déclare mais on n'utlise pas la validation de prise d'empreinte
-        list_prisedempreinteOG = tk.Listbox(self, height=3, width=25, exportselection=0)
-        list_prisedempreinteOG.insert(1, "OUI OG")
-        list_prisedempreinteOG.insert(2, "NON OG")
-
-        list_prisedempreinteOD = tk.Listbox(self, height=3, width=25, exportselection=0)
-        list_prisedempreinteOD.insert(1, "OUI OD")
-        list_prisedempreinteOD.insert(2, "NON OD")
-
-        entry_remarque = tk.Entry(self, width=50)
+        entry_remarque = tk.Entry(self, textvariable=self.remarque, width=50)
 
         list_avisduresident = tk.Listbox(self, height=3, width=25, exportselection=0)
         list_avisduresident.insert(1, "OK")
@@ -134,44 +159,42 @@ class FenetreAnamnese(tk.Tk):
         list_dome_emboutOD.insert(8, "Tube gros Embout OD")
 
         # Disposition des éléments
-        label_cognition.grid(row=0, column=0)
-        label_dejaappareille.grid(row=1, column=0)
-        label_otoscopie.grid(row=2, column=0)
-        # On n'affiche pas la validation de l'empreinte
-        # label_prisedempreinte.grid(row=3, column=0)
+        label_acceptation.grid(row=0, column=0)
+        label_cognition.grid(row=1, column=0)
+        label_dejaappareille.grid(row=2, column=0)
+        label_otoscopie.grid(row=3, column=0)
         label_remarque.grid(row=4, column=0)
         label_avisduresident.grid(row=5, column=0)
         label_conseildappareillage.grid(row=6, column=0)
         label_dome_embout.grid(row=7, column=0)
 
-        list_cognition.grid(row=0, column=1)
-        list_dejaappareille.grid(row=1, column=1)
-        list_otoscopieOG.grid(row=2, column=1)
-        list_otoscopieOD.grid(row=2, column=2)
-        # On n'affiche pas la validation de l'empreinte
-        # list_prisedempreinteOG.grid(row=3, column=1)
-        # list_prisedempreinteOD.grid(row=3, column=2)
+        list_acceptation.grid(row=0, column=1)
+        list_cognition.grid(row=1, column=1)
+        list_dejaappareille.grid(row=2, column=1)
+        list_otoscopieOG.grid(row=3, column=2)
+        list_otoscopieOD.grid(row=3, column=1)
         entry_remarque.grid(row=4, column=1, columnspan=2)
         list_avisduresident.grid(row=5, column=1)
-        list_conseildappareillageOG.grid(row=6, column=1)
-        list_conseildappareillageOD.grid(row=6, column=2)
-        list_dome_emboutOG.grid(row=7, column=1)
-        list_dome_emboutOD.grid(row=7, column=2)
-        bouton_fin.grid(row=8, column=0)
+        list_conseildappareillageOG.grid(row=6, column=2)
+        list_conseildappareillageOD.grid(row=6, column=1)
+        list_dome_emboutOG.grid(row=7, column=2)
+        list_dome_emboutOD.grid(row=7, column=1)
+        bouton_creer_contact_open.grid(row=8, column=0)
+        bouton_recuperer.grid(row=8, column=1)
         bouton_clear.grid(row=8, column=2)
 
         # Création de la liste contenant les réponses choisie
-        les_item1 = [list_cognition, list_dejaappareille, list_otoscopieOG, list_otoscopieOD, list_prisedempreinteOG,
-                     list_prisedempreinteOD]
+        les_item1 = [list_acceptation, list_cognition, list_dejaappareille, list_otoscopieOG, list_otoscopieOD]
         les_item2 = [entry_remarque, list_avisduresident, list_conseildappareillageOG, list_conseildappareillageOD,
                      list_dome_emboutOG]
         les_item3 = [list_dome_emboutOD]
         self.les_items = les_item1 + les_item2 + les_item3
 
-        les_label1 = [label_cognition, label_dejaappareille, label_otoscopie, label_prisedempreinte, label_remarque]
-        les_label2 = [label_avisduresident, label_conseildappareillage, label_dome_embout]
-        self.les_labels = les_label1 + les_label2
-
-        lestext1 = ["Cognition :", "Patient déjà appareillé :", "Otoscopie :", "Prise d'empreinte :", "Remarques :"]
+        lestext1 = ["Cognition :", "Patient déjà appareillé :", "Otoscopie :", "Remarques :"]
         lestext2 = ["Avis du résident (Si possible) :", "Conseils d'appareillage :", "Choix dome/embout"]
         self.les_texts = lestext1 + lestext2
+
+"""
+test = FenetreAnamnese()
+test.mainloop()
+"""
