@@ -94,69 +94,71 @@ class FenetreAnamnese(tk.Tk):
         bouton_recuperer = tk.Button(self, text="Recuperer", command=self.recuperation)
 
         # Création des entrées
-        list_acceptation = tk.Listbox(self, height=3, width=25)
+        list_acceptation = tk.Listbox(self, height=4, width=30)
         list_acceptation.insert(1, "Accepte le dépistage")
         list_acceptation.insert(2, "Refuse le dépistage")
+        list_acceptation.insert(3, "Dépistage impossible")
         list_acceptation.select_set(0)
         list_acceptation.event_generate("<<ListboxSelect>>")
 
-        list_cognition = tk.Listbox(self, height=5, width=25, exportselection=0)
+        list_cognition = tk.Listbox(self, height=4, width=30, exportselection=0)
         list_cognition.insert(1, "Bonne")
         list_cognition.insert(2, "Moyenne")
         list_cognition.insert(3, "Mauvaise")
-        list_cognition.insert(4, "Non Appareillable")
 
-        list_dejaappareille = tk.Listbox(self, height=4, width=25, exportselection=0)
+        list_dejaappareille = tk.Listbox(self, height=4, width=30, exportselection=0)
         list_dejaappareille.insert(1, "NON")
         list_dejaappareille.insert(2, "OUI avec dome")
         list_dejaappareille.insert(3, "OUI avec embout")
 
-        list_otoscopieOG = tk.Listbox(self, height=4, activestyle='underline', width=25,
+        list_otoscopieOG = tk.Listbox(self, height=4, activestyle='underline', width=30,
                                       exportselection=0)
         list_otoscopieOG.insert(1, "Ok OG")
         list_otoscopieOG.insert(2, "Cerumen gênant OG")
         list_otoscopieOG.insert(3, "Bouchon OG")
 
-        list_otoscopieOD = tk.Listbox(self, height=4, width=25, exportselection=0)
+        list_otoscopieOD = tk.Listbox(self, height=4, width=30, exportselection=0)
         list_otoscopieOD.insert(1, "Ok OD")
         list_otoscopieOD.insert(2, "Cerumen gênant OD")
         list_otoscopieOD.insert(3, "Bouchon OD")
 
-        entry_remarque = tk.Entry(self, textvariable=self.remarque, width=50)
+        entry_remarque = tk.Entry(self, textvariable=self.remarque, width=60)
 
-        list_avisduresident = tk.Listbox(self, height=3, width=25, exportselection=0)
+        list_avisduresident = tk.Listbox(self, height=3, width=30, exportselection=0)
         list_avisduresident.insert(1, "OK")
         list_avisduresident.insert(2, "Contre")
 
-        list_conseildappareillageOG = tk.Listbox(self, height=4, width=25, exportselection=0)
+        list_conseildappareillageOG = tk.Listbox(self, height=5, width=30, exportselection=0)
         list_conseildappareillageOG.insert(1, "BTE 312 M OG")
         list_conseildappareillageOG.insert(2, "BTE 13 P OG")
         list_conseildappareillageOG.insert(3, "BTE 675 HP OG")
+        list_conseildappareillageOG.insert(4, "OG non appareillable")
 
-        list_conseildappareillageOD = tk.Listbox(self, height=4, width=25, exportselection=0)
+        list_conseildappareillageOD = tk.Listbox(self, height=5, width=30, exportselection=0)
         list_conseildappareillageOD.insert(1, "BTE 312 M OD")
         list_conseildappareillageOD.insert(2, "BTE 13 P OD")
         list_conseildappareillageOD.insert(3, "BTE 675 HP OD")
+        list_conseildappareillageOD.insert(4, "OD non appareillable")
 
-        list_dome_emboutOG = tk.Listbox(self, height=9, width=25, exportselection=0)
+        list_dome_emboutOG = tk.Listbox(self, height=9, width=30, exportselection=0)
         list_dome_emboutOG.insert(1, "Tube fin Dome open OG")
         list_dome_emboutOG.insert(2, "Tube fin Dome ferme OG")
         list_dome_emboutOG.insert(3, "Tube fin Dome double OG")
         list_dome_emboutOG.insert(4, "Gabarit court OG")
         list_dome_emboutOG.insert(5, "Gabarit moyen OG")
         list_dome_emboutOG.insert(6, "Gabarit long OG")
-        list_dome_emboutOG.insert(7, "Tube fin Embout OG")
-        list_dome_emboutOG.insert(8, "Tube gros Embout OG")
+        list_dome_emboutOG.insert(7, "Tube fin Embout sur mesure OG")
+        list_dome_emboutOG.insert(8, "Tube gros Embout sur mesure OG")
 
-        list_dome_emboutOD = tk.Listbox(self, height=9, width=25, exportselection=0)
+        list_dome_emboutOD = tk.Listbox(self, height=9, width=30, exportselection=0)
         list_dome_emboutOD.insert(1, "Tube fin Dome ouvert OD")
         list_dome_emboutOD.insert(2, "Tube fin Dome ferme OD")
         list_dome_emboutOD.insert(3, "Tube fin Dome double OD")
         list_dome_emboutOD.insert(4, "Gabarit court OD")
         list_dome_emboutOD.insert(5, "Gabarit moyen OD")
         list_dome_emboutOD.insert(6, "Gabarit long OD")
-        list_dome_emboutOD.insert(7, "Tube fin Embout OD")
-        list_dome_emboutOD.insert(8, "Tube gros Embout OD")
+        list_dome_emboutOD.insert(7, "Tube fin Embout sur mesure OD")
+        list_dome_emboutOD.insert(8, "Tube gros Embout sur mesure OD")
 
         # Disposition des éléments
         label_acceptation.grid(row=0, column=0)
@@ -198,3 +200,4 @@ class FenetreAnamnese(tk.Tk):
 test = FenetreAnamnese()
 test.mainloop()
 """
+

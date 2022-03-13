@@ -11,11 +11,15 @@ import os
 import sys
 import pygame
 import openpyxl
+from openpyxl.styles import colors
+from openpyxl.styles import Font, Color
 from datetime import datetime
 import shutil
 import sqlite3
 from pathlib import Path
 import pickle
+from fonctiondekev import pdf_merge
+from fonctiondekev import loss_noah_extractor
 
 # Variable globale pour gérer les étapes dans l'ordre
 global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient, nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3
@@ -73,7 +77,8 @@ if choix_mode == "test":
     dossier_sauvegarde = Path(Path(__file__).parent.absolute(), "mode_test", "Depistages")
 else:
     chemin_calisto = Path(Path.home(), "Documents", "DocumentCalisto")
-    chemin_liste_referent = Path(Path.home(), "Documents", "DocOdipro", "DocMaster", "Liste Referents.xlsx")
+    chemin_liste_referent = Path(Path(__file__).parent.absolute(), "mode_test", "fichier_test", "Liste Referents.xlsx")
+    chemin_synthese_depistage = Path(Path(__file__).parent.absolute(), "mode_test", "fichier_test", "synthese_depistage.xlsx")
     dossier_sauvegarde = Path(Path.home(), "Documents", "DocOdipro", "SynologyDrive", "Depistages")
 ####
 
@@ -117,12 +122,18 @@ else:
 
 # On rempli la maison de retraite et la date du jour dans l'excel des référents
 la_date_jour_save = datetime.today().strftime('%d-%m-%Y')
-wb = openpyxl.load_workbook(chemin_liste_referent)
-ws = wb['Feuil1']
-sheet = wb.active
-ws.cell(row=2, column=4).value = app1.nom_maison_retraite
-ws.cell(row=2, column=7).value = la_date_jour_save
+wb_liste_referent = openpyxl.load_workbook(chemin_liste_referent)
+ws_liste_referent = wb_liste_referent['Feuil1']
+sheet_liste_referent = wb_liste_referent.active
+ws_liste_referent.cell(row=2, column=4).value = app1.nom_maison_retraite
+ws_liste_referent.cell(row=2, column=7).value = la_date_jour_save
 
+# On rempli la maison de retraite et la date du jour dans la synthese du dépistage
+wb_synthese_depistage = openpyxl.load_workbook(chemin_synthese_depistage)
+ws_synthese_depistage = wb_synthese_depistage['Feuil1']
+sheet_synthese_depistage = wb_synthese_depistage.active
+ws_synthese_depistage.cell(row=3, column=3).value = app1.nom_maison_retraite
+ws_synthese_depistage.cell(row=1, column=4).value = la_date_jour_save
 
 # Fonction principale qui détecte les touches du clavier
 def press_on(key):
@@ -221,11 +232,40 @@ def press_on(key):
 
                 if app3.text_reponse[0] == "Refuse le dépistage":
                     text_a_copier = text_a_copier + "   Refus d'effectuer le dépistage" + "\n"
+                    # Ligne otoscopie
+                    if app3.text_reponse[3] == "" and app3.text_reponse[4] == "":
+                        pass
+                    elif app3.text_reponse[3] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[4] + "\n"
+                    elif app3.text_reponse[4] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[3] + "\n"
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[3] + ",  " + \
+                                        app3.text_reponse[4] + "\n"
                     # Ligne remarque
                     if app3.text_reponse[5] == "":
                         text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " Aucune" + "\n"
                     else:
                         text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
+
+                elif app3.text_reponse[0] == "Dépistage impossible":
+                    text_a_copier = text_a_copier + "   Impossible d'éffectuer le dépistage" + "\n"
+                    # Ligne otoscopie
+                    if app3.text_reponse[3] == "" and app3.text_reponse[4] == "":
+                        pass
+                    elif app3.text_reponse[3] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[4] + "\n"
+                    elif app3.text_reponse[4] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[3] + "\n"
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[3] + ",  " + \
+                                        app3.text_reponse[4] + "\n"
+                    # Ligne remarque
+                    if app3.text_reponse[5] == "":
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " Aucune" + "\n"
+                    else:
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
+
                 else:
 
 
@@ -336,21 +376,21 @@ def press_on(key):
                 file_newname_newfile = Path(chemin_calisto, nom_maison_retraite, nom_patient + "-" + prenom_patient + "-" + nom_maison_retraite + ".pdf")
                 shutil.move(file_oldname, file_newname_newfile)
                 # on met à jour le fichier excel avec identité patient et accompagnant
-                ws.cell(row=numero_patient + 4, column=2).value = nom_patient
-                ws.cell(row=numero_patient + 4, column=3).value = prenom_patient
-                ws.cell(row=numero_patient + 4, column=5).value = nom_accompagnant
-                ws.cell(row=numero_patient + 4, column=6).value = prenom_accompagnant
-                ws.cell(row=numero_patient + 4, column=7).value = telephone_accompagnant
-                ws.cell(row=numero_patient + 4, column=8).value = mail_accompagnant
+                ws_liste_referent.cell(row=numero_patient + 4, column=2).value = nom_patient
+                ws_liste_referent.cell(row=numero_patient + 4, column=3).value = prenom_patient
+                ws_liste_referent.cell(row=numero_patient + 4, column=5).value = nom_accompagnant
+                ws_liste_referent.cell(row=numero_patient + 4, column=6).value = prenom_accompagnant
+                ws_liste_referent.cell(row=numero_patient + 4, column=7).value = telephone_accompagnant
+                ws_liste_referent.cell(row=numero_patient + 4, column=8).value = mail_accompagnant
                 # on indique si il y a des empreintes
                 if empreinte_OG < 6 and empreinte_OD < 6:
-                    ws.cell(row=numero_patient + 4, column=9).value = "Aucune"
+                    ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "Aucune"
                 elif empreinte_OG < 6 and empreinte_OD > 5:
-                    ws.cell(row=numero_patient + 4, column=9).value = "OD"
+                    ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "OD"
                 elif empreinte_OG > 5 and empreinte_OD < 6:
-                    ws.cell(row=numero_patient + 4, column=9).value = "OG"
+                    ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "OG"
                 elif empreinte_OG > 5 and empreinte_OD > 5:
-                    ws.cell(row=numero_patient + 4, column=9).value = "ODG"
+                    ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "ODG"
 
                 # On incrémente les variables
                 step_one = 0
@@ -360,6 +400,8 @@ def press_on(key):
                 # on ferme la fiche note
                 pyautogui.click(709, 411)
                 time.sleep(0.1)
+                # on récupère les pertes moyenne avec pyscreenshot et pytesseract
+                analyse_perte = loss_noah_extractor()
                 # On valide la confirmation d'enregistrement dans le cas où on revient sur la fiche
                 pyautogui.click(928, 566)
                 time.sleep(0.1)
@@ -381,22 +423,95 @@ def press_on(key):
                     time.sleep(0.1)
                     # on remet la souris au milieu haut de l'écran
                     pyautogui.moveTo(1000, 350)
-                    # on met à jour le fichier excel avec identité patient et accompagnant
-                    ws.cell(row=numero_patient + 4, column=2).value = nom_patient.upper()
-                    ws.cell(row=numero_patient + 4, column=3).value = prenom_patient.upper()
-                    ws.cell(row=numero_patient + 4, column=5).value = nom_accompagnant.upper()
-                    ws.cell(row=numero_patient + 4, column=6).value = prenom_accompagnant.upper()
-                    ws.cell(row=numero_patient + 4, column=7).value = telephone_accompagnant
-                    ws.cell(row=numero_patient + 4, column=8).value = mail_accompagnant.lower()
+                    # on met à jour la liste des référents avec identité patient et accompagnant
+                    ws_liste_referent.cell(row=numero_patient + 4, column=2).value = nom_patient.upper()
+                    ws_liste_referent.cell(row=numero_patient + 4, column=3).value = prenom_patient.upper()
+                    ws_liste_referent.cell(row=numero_patient + 4, column=5).value = nom_accompagnant.upper()
+                    ws_liste_referent.cell(row=numero_patient + 4, column=6).value = prenom_accompagnant.upper()
+                    ws_liste_referent.cell(row=numero_patient + 4, column=7).value = telephone_accompagnant
+                    ws_liste_referent.cell(row=numero_patient + 4, column=8).value = mail_accompagnant.lower()
                     # on indique si il y a des empreintes
                     if empreinte_OG < 6 and empreinte_OD < 6:
-                        ws.cell(row=numero_patient + 4, column=9).value = "Aucune"
+                        ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "Aucune"
                     elif empreinte_OG < 6 and empreinte_OD > 5:
-                        ws.cell(row=numero_patient + 4, column=9).value = "OD"
+                        ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "OD"
                     elif empreinte_OG > 5 and empreinte_OD < 6:
-                        ws.cell(row=numero_patient + 4, column=9).value = "OG"
+                        ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "OG"
                     elif empreinte_OG > 5 and empreinte_OD > 5:
-                        ws.cell(row=numero_patient + 4, column=9).value = "ODG"
+                        ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "ODG"
+
+                    # on met à jour la synthèse
+                    #Nom prénom
+                    ws_synthese_depistage.cell(row=numero_patient + 6, column=2).value = nom_patient.upper() + " " + prenom_patient.upper()
+
+                    # Résultat du dépistage
+                    # Description de la perte
+                    if app3.text_reponse[0] == "Refuse le dépistage":
+                        resultat_test = "Refus du dépistage"
+                    elif app3.text_reponse[0] == "Dépistage impossible":
+                        resultat_test = "Dépistage impossible"
+                    elif app3.text_reponse[7] == "OG non appareillable" and app3.text_reponse[8] == "OD non appareillable":
+                        resultat_test = "Non appareillable ODG"
+                    elif app3.text_reponse[7] == "OG non appareillable":
+                        resultat_test = "Non appareillable OG / " + analyse_perte[0]
+                    elif app3.text_reponse[8] == "OD non appareillable":
+                        resultat_test = "Non appareillable OD / " + analyse_perte[1]
+                    else:
+                        resultat_test = analyse_perte[2]
+
+                    # Description état de l'otoscopie
+                    if app3.text_reponse[3] == "Cerumen gênant OG" and app3.text_reponse[4] == "Cerumen gênant OD":
+                        resultat_test == resultat_test + " ODG cérumen gênant a retirer"
+                    elif app3.text_reponse[3] == "Bouchon OG" and app3.text_reponse[4] == "Bouchon OD":
+                        resultat_test == resultat_test + " ODG bouchons de cerumen a retirer"
+                    elif app3.text_reponse[3] == "Cerumen gênant OG":
+                        resultat_test == resultat_test + " OG cérumen gênant a retirer"
+                    elif app3.text_reponse[4] == "Cerumen gênant OD":
+                        resultat_test == resultat_test + " OD cérumen gênant a retirer"
+                    elif app3.text_reponse[3] == "Bouchon OG":
+                        resultat_test == resultat_test + " OG bouchon de cerumen a retirer"
+                    elif app3.text_reponse[4] == "Bouchon OD":
+                        resultat_test == resultat_test + " OD bouchon de cerumen a retirer"
+                    ws_synthese_depistage.cell(row=numero_patient + 6, column=3).value = resultat_test
+
+                    #Déjà appareillé
+                    if app3.text_reponse[2] == "":
+                        resultat_appareillage = "Pas de réponse patient(e)"
+                    elif app3.text_reponse[2] == "NON":
+                        resultat_appareillage = "NON"
+                    else:
+                        resultat_appareillage = "OUI"
+                    ws_synthese_depistage.cell(row=numero_patient + 6, column=4).value = resultat_appareillage
+
+                    #Définition du besoin
+                    #ws_synthese_depistage.cell(row=numero_patient + 6, column=5).value = analyse_perte[3]
+                    oui_color = Font(color="55ef37")
+                    impossible_color = Font(color="f6684d")
+                    if app3.text_reponse[0] == "Refuse le dépistage":
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = impossible_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = impossible_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = impossible_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = impossible_color
+
+                    elif app3.text_reponse[0] == "Dépistage impossible":
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = impossible_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = impossible_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = impossible_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = impossible_color
+
+                    elif app3.text_reponse[7] == "OG non appareillable" and app3.text_reponse[8] == "OD non appareillable":
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = impossible_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = impossible_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = impossible_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = impossible_color
+                    elif analyse_perte[3] == "Oui":
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=5).value = analyse_perte[3]
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = oui_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = oui_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = oui_color
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = oui_color
+                    elif analyse_perte[3] == "Non":
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=5).value = analyse_perte[3]
 
                     # On incrémente les variables
                     step_one = 0
@@ -448,11 +563,24 @@ def press_off(key):
             pygame.mixer.music.play()
             time.sleep(0.5)
             pygame.mixer.quit()
+            #Création fichier pdf fusionné de tous les patients
+            try:
+                pdf_merge(rf"{chemin_calisto}/{nom_maison_retraite}", rf"{chemin_calisto}/{nom_maison_retraite}/Fiches_tous_patients_{nom_maison_retraite}.pdf")
+            except Exception as e:
+                print("pdferreur", e)
+
             # On enregistre le fichier excel dans le dossier de la maison de retraite
-            liste_enregistre = Path(chemin_calisto, nom_maison_retraite, "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "KPERREAUT.xlsx")
-            wb.save(liste_enregistre)
+            liste_enregistre = Path(chemin_calisto, nom_maison_retraite,
+                                    "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "KPERREAUT.xlsx")
+            wb_liste_referent.save(liste_enregistre)
+
+            # On enregistre le fichier excel dans le dossier de la maison de retraite
+            synthese_enregistre = Path(chemin_calisto, nom_maison_retraite,
+                                    "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "KPERREAUT.xlsx")
+            wb_synthese_depistage.save(synthese_enregistre)
+
             # On renomme le dossier de la maison de retraite avec date jour zone
-            nom_dossier_sauvegarde = nom_maison_retraite + "-" + datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
+            nom_dossier_sauvegarde = nom_maison_retraite + "-" + datetime.today().strftime('%d-%m-%Y--%H-%M-%S')
             dossier_maison_retraite = Path(chemin_calisto, nom_maison_retraite)
             dossier_maison_retraite_date = Path(chemin_calisto, nom_dossier_sauvegarde)
             dossier_sauvegarde_date = Path(dossier_sauvegarde, nom_dossier_sauvegarde)
@@ -555,7 +683,7 @@ def press_off(key):
                     connection.close()
 
             connection.close()
-            exit()
+            sys.exit()
             return 0
 
 

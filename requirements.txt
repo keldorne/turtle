@@ -5,3 +5,4 @@ pynput~=1.7.6
 openpyxl~=3.0.9
 pygame~=2.1.2
 ttkthemes~=3.2.2
+PyPDF2~=1.26.0
