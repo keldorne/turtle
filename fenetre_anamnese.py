@@ -73,7 +73,7 @@ class FenetreAnamnese(tk.Tk):
     def creer_fenetre(self):
         # Paramètres initiaux
         self.resizable(False, False)
-        self.geometry('+250+295')
+        self.geometry('+190+280')
         self.title('Anamnèse')
 
         # Création des labels
@@ -200,4 +200,5 @@ class FenetreAnamnese(tk.Tk):
 test = FenetreAnamnese()
 test.mainloop()
 """
+
 

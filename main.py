@@ -27,7 +27,9 @@ global chemin_calisto, dossier_sauvegarde, la_date_jour_save, choix_mode
 # Variable globale pour l'enregistrement dans la base de donnée
 global nom_patients, prenom_patients, nom_accompagnants, prenom_accompagnants, telephone_accompagnants,\
     mail_accompagnants, anamnese_db1, anamnese_db2, anamnese_db3, anamnese_db4, anamnese_db5, anamnese_db6,\
-    anamnese_db7, anamnese_db8, anamnese_db9, anamnese_db10, anamnese_db11, empreinte_OD, empreinte_OG
+    anamnese_db7, anamnese_db8, anamnese_db9, anamnese_db10, anamnese_db11, empreinte_OD, empreinte_OG, oui_color,\
+    impossible_color, defaut_color
+
 nom_patients = [""]*50
 prenom_patients = [""]*50
 nom_accompagnants = [""]*50
@@ -45,6 +47,12 @@ anamnese_db8 = [""]*50
 anamnese_db9 = [""]*50
 anamnese_db10 = [""]*50
 anamnese_db11 = [""]*50
+
+#Configuration police pour la synthèse
+taillepolice = 8
+oui_color = Font(color="d4f88a", size=taillepolice)
+impossible_color = Font(color="f88a8a", size=taillepolice)
+defaut_color = Font(size=taillepolice)
 
 # Implémentation d'un mode test qui marche sur d'autre machine n'ayant ni l'arborescence ni les fichiers prérequis
 # Normal où test
@@ -139,7 +147,7 @@ ws_synthese_depistage.cell(row=1, column=4).value = la_date_jour_save
 def press_on(key):
     global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient,\
         nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3, empreinte_OD,\
-        empreinte_OG
+        empreinte_OG, oui_color, impossible_color, defaut_color
     if key == Key.f9:
         if step_one == 0 and step_two == 0 and step_three == 0:
             # On ouvre la fenetre permettant d'entrer les données patient et accompagnant
@@ -267,7 +275,6 @@ def press_on(key):
                         text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
 
                 else:
-
 
                     # Ligne cognition
                     if app3.text_reponse[1] == "":
@@ -443,7 +450,7 @@ def press_on(key):
                     # on met à jour la synthèse
                     #Nom prénom
                     ws_synthese_depistage.cell(row=numero_patient + 6, column=2).value = nom_patient.upper() + " " + prenom_patient.upper()
-
+                    ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = defaut_color
                     # Résultat du dépistage
                     # Description de la perte
                     if app3.text_reponse[0] == "Refuse le dépistage":
@@ -461,18 +468,19 @@ def press_on(key):
 
                     # Description état de l'otoscopie
                     if app3.text_reponse[3] == "Cerumen gênant OG" and app3.text_reponse[4] == "Cerumen gênant OD":
-                        resultat_test == resultat_test + " ODG cérumen gênant a retirer"
+                        resultat_test = resultat_test + " ODG cérumen a retirer"
                     elif app3.text_reponse[3] == "Bouchon OG" and app3.text_reponse[4] == "Bouchon OD":
-                        resultat_test == resultat_test + " ODG bouchons de cerumen a retirer"
+                        resultat_test = resultat_test + " ODG bouchons cerumen"
                     elif app3.text_reponse[3] == "Cerumen gênant OG":
-                        resultat_test == resultat_test + " OG cérumen gênant a retirer"
+                        resultat_test = resultat_test + " OG cérumen a retirer"
                     elif app3.text_reponse[4] == "Cerumen gênant OD":
-                        resultat_test == resultat_test + " OD cérumen gênant a retirer"
+                        resultat_test = resultat_test + " OD cérumen a retirer"
                     elif app3.text_reponse[3] == "Bouchon OG":
-                        resultat_test == resultat_test + " OG bouchon de cerumen a retirer"
+                        resultat_test = resultat_test + " OG bouchons cerumen"
                     elif app3.text_reponse[4] == "Bouchon OD":
-                        resultat_test == resultat_test + " OD bouchon de cerumen a retirer"
+                        resultat_test = resultat_test + " OD bouchons cerumen"
                     ws_synthese_depistage.cell(row=numero_patient + 6, column=3).value = resultat_test
+                    ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = defaut_color
 
                     #Déjà appareillé
                     if app3.text_reponse[2] == "":
@@ -482,18 +490,10 @@ def press_on(key):
                     else:
                         resultat_appareillage = "OUI"
                     ws_synthese_depistage.cell(row=numero_patient + 6, column=4).value = resultat_appareillage
+                    ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = defaut_color
 
                     #Définition du besoin
-                    #ws_synthese_depistage.cell(row=numero_patient + 6, column=5).value = analyse_perte[3]
-                    oui_color = Font(color="55ef37")
-                    impossible_color = Font(color="f6684d")
-                    if app3.text_reponse[0] == "Refuse le dépistage":
-                        ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = impossible_color
-                        ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = impossible_color
-                        ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = impossible_color
-                        ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = impossible_color
-
-                    elif app3.text_reponse[0] == "Dépistage impossible":
+                    if app3.text_reponse[0] == "Refuse le dépistage" or app3.text_reponse[0] == "Dépistage impossible":
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = impossible_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = impossible_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = impossible_color
@@ -504,15 +504,17 @@ def press_on(key):
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = impossible_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = impossible_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = impossible_color
+
                     elif analyse_perte[3] == "Oui":
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).value = analyse_perte[3]
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = oui_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = oui_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = oui_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = oui_color
+
                     elif analyse_perte[3] == "Non":
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).value = analyse_perte[3]
-
+                        ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = defaut_color
                     # On incrémente les variables
                     step_one = 0
                     step_two = 0
