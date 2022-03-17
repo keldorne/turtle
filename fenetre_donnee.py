@@ -32,8 +32,8 @@ class FenetreDonnee(tk.Tk):
         self.entry_prenom_patient = []
         self.entry_nom_accompagnant = []
         self.entry_prenom_accompagnant = []
-        self.entry_telephone_accompagnant = []
         self.entry_mail_accompagnant = []
+        self.entry_telephone_accompagnant = []
         self.creer_fenetre()
 
     # Définition du bouton tout effacer
@@ -43,8 +43,8 @@ class FenetreDonnee(tk.Tk):
         self.entry_prenom_patient.delete(0, END)
         self.entry_nom_accompagnant.delete(0, END)
         self.entry_prenom_accompagnant.delete(0, END)
-        self.entry_telephone_accompagnant.delete(0, END)
         self.entry_mail_accompagnant.delete(0, END)
+        self.entry_telephone_accompagnant.delete(0, END)
 
     # Définition du bouton pour copier le nom du patient dans le nom de l'accompagnant
     def enregistrer1(self):
@@ -65,8 +65,8 @@ class FenetreDonnee(tk.Tk):
         self.prenom_patient = self.entry_prenom_patient.get()
         self.nom_accompagnant = self.entry_nom_accompagnant.get()
         self.prenom_accompagnant = self.entry_prenom_accompagnant.get()
-        self.telephone_accompagnant = self.entry_telephone_accompagnant.get()
         self.mail_accompagnant = self.entry_mail_accompagnant.get()
+        self.telephone_accompagnant = self.entry_telephone_accompagnant.get()
         data_temp_save = [self.nom_patient, self.prenom_patient, self.nom_accompagnant, self.prenom_accompagnant,\
                      self.telephone_accompagnant, self.mail_accompagnant]
         pickle.dump(data_temp_save, open("files/temp_fenetre_donnee.dat", "wb"))
@@ -78,8 +78,8 @@ class FenetreDonnee(tk.Tk):
         self.prenom_patient = self.entry_prenom_patient.get()
         self.nom_accompagnant = self.entry_nom_accompagnant.get()
         self.prenom_accompagnant = self.entry_prenom_accompagnant.get()
-        self.telephone_accompagnant = self.entry_telephone_accompagnant.get()
         self.mail_accompagnant = self.entry_mail_accompagnant.get()
+        self.telephone_accompagnant = self.entry_telephone_accompagnant.get()
         data_temp_save = [self.nom_patient, self.prenom_patient, self.nom_accompagnant, self.prenom_accompagnant,\
                      self.telephone_accompagnant, self.mail_accompagnant]
         pickle.dump(data_temp_save, open("files/temp_fenetre_donnee.dat", "wb"))
@@ -156,8 +156,8 @@ class FenetreDonnee(tk.Tk):
         label_prenom_patient.grid(row=2, column=0)
         label_nom_accompagnant.grid(row=3, column=0)
         label_prenom_accompagnant.grid(row=4, column=0)
-        label_telephone_accompagnant.grid(row=5, column=0)
-        label_mail_accompagnant.grid(row=6, column=0)
+        label_mail_accompagnant.grid(row=5, column=0)
+        label_telephone_accompagnant.grid(row=6, column=0)
         label_option_complementaire.grid(row=8, column=0)
 
         bouton_choix_sexe_homme.grid(row=0, column=1)
@@ -166,8 +166,8 @@ class FenetreDonnee(tk.Tk):
         self.entry_prenom_patient.grid(row=2, column=1)
         self.entry_nom_accompagnant.grid(row=3, column=1)
         self.entry_prenom_accompagnant.grid(row=4, column=1)
-        self.entry_telephone_accompagnant.grid(row=5, column=1)
-        self.entry_mail_accompagnant.grid(row=6, column=1)
+        self.entry_mail_accompagnant.grid(row=5, column=1)
+        self.entry_telephone_accompagnant.grid(row=6, column=1)
 
         bouton_creer_contact_open.grid(row=7, column=0)
         bouton_ouvrir_fiche.grid(row=9, column=0)
@@ -180,3 +180,4 @@ class FenetreDonnee(tk.Tk):
 test = FenetreDonnee()
 test.mainloop()
 """
+

@@ -28,7 +28,7 @@ global chemin_calisto, dossier_sauvegarde, la_date_jour_save, choix_mode
 global nom_patients, prenom_patients, nom_accompagnants, prenom_accompagnants, telephone_accompagnants,\
     mail_accompagnants, anamnese_db1, anamnese_db2, anamnese_db3, anamnese_db4, anamnese_db5, anamnese_db6,\
     anamnese_db7, anamnese_db8, anamnese_db9, anamnese_db10, anamnese_db11, empreinte_OD, empreinte_OG, oui_color,\
-    impossible_color, defaut_color
+    impossible_color, defaut_color, liste_enregistre_tmp, synthese_enregistre_tmp
 
 nom_patients = [""]*50
 prenom_patients = [""]*50
@@ -50,8 +50,8 @@ anamnese_db11 = [""]*50
 
 #Configuration police pour la synthèse
 taillepolice = 8
-oui_color = Font(color="d4f88a", size=taillepolice)
-impossible_color = Font(color="f88a8a", size=taillepolice)
+oui_color = Font(color="d2fbc3", size=taillepolice)
+impossible_color = Font(color="f7a5a5", size=taillepolice)
 defaut_color = Font(size=taillepolice)
 
 # Implémentation d'un mode test qui marche sur d'autre machine n'ayant ni l'arborescence ni les fichiers prérequis
@@ -130,6 +130,8 @@ else:
 
 # On rempli la maison de retraite et la date du jour dans l'excel des référents
 la_date_jour_save = datetime.today().strftime('%d-%m-%Y')
+liste_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
+                                            "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "temp.xlsx")
 wb_liste_referent = openpyxl.load_workbook(chemin_liste_referent)
 ws_liste_referent = wb_liste_referent['Feuil1']
 sheet_liste_referent = wb_liste_referent.active
@@ -137,6 +139,8 @@ ws_liste_referent.cell(row=2, column=4).value = app1.nom_maison_retraite
 ws_liste_referent.cell(row=2, column=7).value = la_date_jour_save
 
 # On rempli la maison de retraite et la date du jour dans la synthese du dépistage
+synthese_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
+                                               "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "temp.xlsx")
 wb_synthese_depistage = openpyxl.load_workbook(chemin_synthese_depistage)
 ws_synthese_depistage = wb_synthese_depistage['Feuil1']
 sheet_synthese_depistage = wb_synthese_depistage.active
@@ -147,7 +151,9 @@ ws_synthese_depistage.cell(row=1, column=4).value = la_date_jour_save
 def press_on(key):
     global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient,\
         nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3, empreinte_OD,\
-        empreinte_OG, oui_color, impossible_color, defaut_color
+        empreinte_OG, oui_color, impossible_color, defaut_color, wb_liste_referent, wb_synthese_depistage,\
+        ws_liste_referent, ws_synthese_depistage, liste_enregistre_tmp, synthese_enregistre_tmp
+
     if key == Key.f9:
         if step_one == 0 and step_two == 0 and step_three == 0:
             # On ouvre la fenetre permettant d'entrer les données patient et accompagnant
@@ -438,6 +444,14 @@ def press_on(key):
                     ws_liste_referent.cell(row=numero_patient + 4, column=7).value = telephone_accompagnant
                     ws_liste_referent.cell(row=numero_patient + 4, column=8).value = mail_accompagnant.lower()
                     # on indique si il y a des empreintes
+
+                    empreinte_OG = app3.id_reponse[9]
+                    empreinte_OD = app3.id_reponse[10]
+                    if empreinte_OG == "":
+                        empreinte_OG = 1
+                    if empreinte_OD == "":
+                        empreinte_OD = 1
+
                     if empreinte_OG < 6 and empreinte_OD < 6:
                         ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "Aucune"
                     elif empreinte_OG < 6 and empreinte_OD > 5:
@@ -516,6 +530,21 @@ def press_on(key):
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).value = analyse_perte[3]
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = defaut_color
                     # On incrémente les variables
+                    # Enregistrement ligne par ligne dans la liste et la synthèse
+                    # On effectue un enregistrment temporaire en cas de bug et on réouvre la fiche (liste référent)
+                    wb_liste_referent.save(liste_enregistre_tmp)
+                    #On réouvre
+                    wb_liste_referent = openpyxl.load_workbook(liste_enregistre_tmp)
+                    ws_liste_referent = wb_liste_referent['Feuil1']
+                    sheet_liste_referent = wb_liste_referent.active
+
+                    # On effectue un enregistrment temporaire en cas de bug et on réouvre la fiche (synthèse)
+                    wb_synthese_depistage.save(synthese_enregistre_tmp)
+                    # On réouvre
+                    wb_synthese_depistage = openpyxl.load_workbook(synthese_enregistre_tmp)
+                    ws_synthese_depistage = wb_synthese_depistage['Feuil1']
+                    sheet_synthese_depistage = wb_synthese_depistage.active
+
                     step_one = 0
                     step_two = 0
                     numero_patient += 1
@@ -549,7 +578,7 @@ def press_on(key):
 
 # Fermeture avec la touche esc
 def press_off(key):
-    global chemin_calisto, nom_maison_retraite, dossier_sauvegarde, la_date_jour_save
+    global chemin_calisto, nom_maison_retraite, dossier_sauvegarde, la_date_jour_save, wb_liste_referent, wb_synthese_depistage
     if key == Key.esc:
         if len(os.listdir(Path(chemin_calisto, nom_maison_retraite))) == 0:
             print("Le répertoire est vide")
@@ -573,13 +602,15 @@ def press_off(key):
 
             # On enregistre le fichier excel dans le dossier de la maison de retraite
             liste_enregistre = Path(chemin_calisto, nom_maison_retraite,
-                                    "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "KPERREAUT.xlsx")
+                                    "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
             wb_liste_referent.save(liste_enregistre)
+            os.remove(liste_enregistre_tmp)
 
             # On enregistre le fichier excel dans le dossier de la maison de retraite
             synthese_enregistre = Path(chemin_calisto, nom_maison_retraite,
-                                    "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "KPERREAUT.xlsx")
+                                    "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
             wb_synthese_depistage.save(synthese_enregistre)
+            os.remove(synthese_enregistre_tmp)
 
             # On renomme le dossier de la maison de retraite avec date jour zone
             nom_dossier_sauvegarde = nom_maison_retraite + "-" + datetime.today().strftime('%d-%m-%Y--%H-%M-%S')
