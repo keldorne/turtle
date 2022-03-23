@@ -50,8 +50,8 @@ anamnese_db11 = [""]*50
 
 #Configuration police pour la synthèse
 taillepolice = 8
-oui_color = Font(color="d2fbc3", size=taillepolice)
-impossible_color = Font(color="f7a5a5", size=taillepolice)
+oui_color = Font(color="296c10", size=taillepolice)
+impossible_color = Font(color="6c1610", size=taillepolice)
 defaut_color = Font(size=taillepolice)
 
 # Implémentation d'un mode test qui marche sur d'autre machine n'ayant ni l'arborescence ni les fichiers prérequis
@@ -233,6 +233,9 @@ def press_on(key):
             if choix_mode == "test":
                 pass
             else:
+                # On force l'audiométrie tonale pour ouvrir la note
+                pyautogui.click(25, 92)
+                time.sleep(0.1)
                 # Ouverture note
                 pyautogui.click(157, 587)
                 # Placement correct de la fenêtre
@@ -281,6 +284,8 @@ def press_on(key):
                         text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
 
                 else:
+                    if app3.text_reponse[0] == "Controle d'appareillage":
+                        text_a_copier = text_a_copier + "   Controle d'appareillage auditif" + "\n"
 
                     # Ligne cognition
                     if app3.text_reponse[1] == "":
@@ -413,6 +418,9 @@ def press_on(key):
                 # on ferme la fiche note
                 pyautogui.click(709, 411)
                 time.sleep(0.1)
+                #On force l'audiométrie tonale pour récupérer les données d'audiométrie
+                pyautogui.click(25, 92)
+                time.sleep(0.1)
                 # on récupère les pertes moyenne avec pyscreenshot et pytesseract
                 analyse_perte = loss_noah_extractor()
                 # On valide la confirmation d'enregistrement dans le cas où on revient sur la fiche
@@ -526,7 +534,7 @@ def press_on(key):
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = oui_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = oui_color
 
-                    elif analyse_perte[3] == "Non":
+                    elif analyse_perte[3] == "Non" or analyse_perte[3] == "Si besoin ressenti":
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).value = analyse_perte[3]
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = defaut_color
                     # On incrémente les variables
@@ -716,10 +724,12 @@ def press_off(key):
                     connection.close()
 
             connection.close()
-            sys.exit()
+            quit()
             return 0
 
 
 # On reste en veille des touches du clavier
 with Listener(on_press=press_on, on_release=press_off) as listener:
     listener.join()
+
+exit()

@@ -28,11 +28,15 @@ saves = pickle.load(open("test.dat", "rb"))
 
 print(saves)
 """
+
 """
 from fonctiondekev import loss_noah_extractor
 import time
+import pyautogui
 time.sleep(4)
+pyautogui.press('f2')
 """
+
 """
 import cv2
 import pytesseract
@@ -174,10 +178,20 @@ def loss_noah_extractor():
     return analyse
 """
 
-"""
+import time
+from fonctiondekev import loss_noah_extractor
+time.sleep(4)
 texts = loss_noah_extractor()
 print(texts[0])
+
+
 """
-from fonctiondekev import pdf_merge
-pdf_merge(r"C:\Users\Audio69\Documents\DocumentCalisto\testfolder", r"C:\Users\Audio69\Documents\DocumentCalisto\testfolder\touspatient.pdf")
+maliste = [3,4,5]
+if not maliste:
+    print("vide")
+else:
+    print("plein")
+"""
+#from fonctiondekev import pdf_merge
+#pdf_merge(r"C:\Users\Audio69\Documents\DocOdipro\SynologyDrive\Depistages\MR TESTPDF-17-03-2022--22-36-57", r"C:\Users\Audio69\Documents\DocOdipro\SynologyDrive\Depistages\MR TESTPDF-17-03-2022--22-36-57\touspatient.pdf")
 

@@ -98,6 +98,7 @@ class FenetreAnamnese(tk.Tk):
         list_acceptation.insert(1, "Accepte le dépistage")
         list_acceptation.insert(2, "Refuse le dépistage")
         list_acceptation.insert(3, "Dépistage impossible")
+        list_acceptation.insert(4, "Controle d'appareillage")
         list_acceptation.select_set(0)
         list_acceptation.event_generate("<<ListboxSelect>>")
 

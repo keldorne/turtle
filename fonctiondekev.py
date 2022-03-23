@@ -5,15 +5,15 @@ from pathlib import Path
 
 from PyPDF2 import PdfFileMerger
 
+import glob
+
 
 # pass the path of the parent_folder
 def pdf_merge(parent_folder: str, output_folder: str):
     #Lecture du dossier
-    target_files = []
-    for path, subdirs, files in os.walk(parent_folder):
-        for name in files:
-            target_files.append(os.path.join(path, name))
-
+    patern = parent_folder + "/*.pdf"
+    target_files = glob.glob(patern)
+    print(target_files)
     #Fusion des .pdf
     merger = PdfFileMerger()
 
@@ -53,7 +53,7 @@ def loss_noah_extractor():
         pass
 
     # image = cv2.imread('imageaudiovoid.png')
-
+    print("OK")
     # Traitement de l'image
     # Recadrage, binarisation de l'oreille droite
     imageOD = image[260:285, 225:425]
@@ -74,14 +74,20 @@ def loss_noah_extractor():
     perteog = re.findall("[0-9,-]+", textOG)
 
     # Mise en forme des valeurs
-    if perteod[0] == '-':
+    if not perteod:
+        pod = 0
+        perteod = 1000
+    elif perteod[0] == '-':
         pod = 0
         perteod = 1000
     else:
         pod = 1
         perteod = math.ceil(float(perteod[0].replace(",", ".")))
 
-    if perteog[0] == '-':
+    if not perteog:
+        pog = 0
+        perteog = 2000
+    elif perteog[0] == '-':
         pog = 0
         perteog = 2000
     else:
