@@ -6,6 +6,7 @@ from pathlib import Path
 from PyPDF2 import PdfFileMerger
 
 import glob
+import win32com.client
 
 
 # pass the path of the parent_folder
@@ -191,3 +192,21 @@ def loss_noah_extractor():
     print(analyse_og)
     return analyse_od, analyse_og, analyse, besoin
 
+
+def excel_triage(liste, synthese):
+    # Traitement de la liste
+    excel_liste = win32com.client.Dispatch("Excel.Application")
+    liste_abs = os.path.abspath(liste)
+    wb = excel_liste.Workbooks.Open(liste_abs)
+    ws = wb.Worksheets('Feuil1')
+    ws.Range('B4:I28').Sort(Key1=ws.Range('B3'), Order1=1, Orientation=1)
+    wb.Save()
+    excel_liste.Application.Quit()
+    # Traitement de la synthèse
+    excel_synthese = win32com.client.Dispatch("Excel.Application")
+    synthese_abs = os.path.abspath(synthese)
+    wb = excel_synthese.Workbooks.Open(synthese_abs)
+    ws = wb.Worksheets('Feuil1')
+    ws.Range('B6:E28').Sort(Key1=ws.Range('B5'), Order1=1, Orientation=1)
+    wb.Save()
+    excel_synthese.Application.Quit()

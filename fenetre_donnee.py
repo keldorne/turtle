@@ -147,8 +147,9 @@ class FenetreDonnee(tk.Tk):
         self.entry_prenom_patient = tk.Entry(self, textvariable=self.pp, width=35)
         self.entry_nom_accompagnant = tk.Entry(self, textvariable=self.na, width=35)
         self.entry_prenom_accompagnant = tk.Entry(self, textvariable=self.pa, width=35)
-        self.entry_telephone_accompagnant = tk.Entry(self, textvariable=self.ta, width=35)
         self.entry_mail_accompagnant = tk.Entry(self, textvariable=self.ma, width=35)
+        self.entry_telephone_accompagnant = tk.Entry(self, textvariable=self.ta, width=35)
+
 
         # Disposition des widgets
         label_sexe_patient.grid(row=0, column=0)
@@ -180,4 +181,5 @@ class FenetreDonnee(tk.Tk):
 test = FenetreDonnee()
 test.mainloop()
 """
+
 

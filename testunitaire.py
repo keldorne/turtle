@@ -177,13 +177,13 @@ def loss_noah_extractor():
     print(analyse)
     return analyse
 """
-
+"""
 import time
 from fonctiondekev import loss_noah_extractor
 time.sleep(4)
 texts = loss_noah_extractor()
 print(texts[0])
-
+"""
 
 """
 maliste = [3,4,5]
@@ -191,7 +191,62 @@ if not maliste:
     print("vide")
 else:
     print("plein")
+
+print(os.path.join(chemin_calisto, "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx"))
+lejourseleve = os.path.join(chemin_calisto, "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
+
+liste_enregistre_abs = os.path.abspath(liste_enregistre)
+wb_liste_referent = openpyxl.load_workbook(liste_enregistre_abs)
+ws_liste_referent = wb_liste_referent['Feuil1']
+sheet_liste_referent = wb_liste_referent.active
+sheet_liste_referent.auto_filter.ref = "B3:I3"
+wb_liste_referent.save(liste_enregistre_abs)
+
+
+
+excel = win32com.client.Dispatch("Excel.Application")
+
+
+#liste_enregistre_abs = Path(liste_enregistre_temporaire).resolve()
+
+print(liste_enregistre_abs)
+print(type(liste_enregistre_abs))
+wb = excel.Workbooks.Open(liste_enregistre_abs)
+ws = wb.Worksheets('Feuil1')
+ws.Range('B4:I28').Sort(Key1=ws.Range('B3'), Order1=1, Orientation=1)
+wb.Save()
+excel.Application.Quit()
+time.sleep(0.1)
+#shutil.move(liste_enregistre_temporaire, liste_enregistre)
+
+
 """
 #from fonctiondekev import pdf_merge
 #pdf_merge(r"C:\Users\Audio69\Documents\DocOdipro\SynologyDrive\Depistages\MR TESTPDF-17-03-2022--22-36-57", r"C:\Users\Audio69\Documents\DocOdipro\SynologyDrive\Depistages\MR TESTPDF-17-03-2022--22-36-57\touspatient.pdf")
+
+
+import openpyxl
+import win32com.client
+import time
+from os.path import abspath
+from pathlib import Path
+import os
+import shutil
+from fonctiondekev import excel_triage
+
+input()
+chemin_calisto = Path(Path.home(), "Documents", "DocumentCalisto")
+nom_maison_retraite = "MR VILLA SAINT AGNES"
+la_date_jour_save = "31-03-2022"
+
+liste_enregistre = Path(chemin_calisto, nom_maison_retraite,
+                                    "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
+
+synthese_enregistre = Path(chemin_calisto, nom_maison_retraite,
+                           "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
+
+excel_triage(liste_enregistre, synthese_enregistre)
+
+
+
 

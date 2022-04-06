@@ -18,8 +18,10 @@ import shutil
 import sqlite3
 from pathlib import Path
 import pickle
+import win32com.client
 from fonctiondekev import pdf_merge
 from fonctiondekev import loss_noah_extractor
+from fonctiondekev import excel_triage
 
 # Variable globale pour gérer les étapes dans l'ordre
 global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient, nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3
@@ -111,17 +113,17 @@ files_str = str(files)
 if nb_de_fichier > 1:
     print("Le dossier n'est pas conforme, trop de fichier(s)/dossier(s)")
     nom_maison_retraite = ""
-    exit()
+    sys.exit()
 
 elif nb_de_fichier == 0:
     print("Il n'y a pas de dossier avec le nom de la maison de retraite")
     nom_maison_retraite = ""
-    exit()
+    sys.exit()
 
 elif ".pdf" in files_str or ".txt" in files_str:
     nom_maison_retraite = ""
     print("Il n'y a pas le dossier de la maison de retraite")
-    exit()
+    sys.exit()
 
 else:
     for files in files:
@@ -135,6 +137,8 @@ liste_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
 wb_liste_referent = openpyxl.load_workbook(chemin_liste_referent)
 ws_liste_referent = wb_liste_referent['Feuil1']
 sheet_liste_referent = wb_liste_referent.active
+#Adjonction fonction filtrage
+sheet_liste_referent.auto_filter.ref = "B3:I3"
 ws_liste_referent.cell(row=2, column=4).value = app1.nom_maison_retraite
 ws_liste_referent.cell(row=2, column=7).value = la_date_jour_save
 
@@ -144,6 +148,8 @@ synthese_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
 wb_synthese_depistage = openpyxl.load_workbook(chemin_synthese_depistage)
 ws_synthese_depistage = wb_synthese_depistage['Feuil1']
 sheet_synthese_depistage = wb_synthese_depistage.active
+#Adjonction fonction filtrage
+sheet_synthese_depistage.auto_filter.ref = "B5:E5"
 ws_synthese_depistage.cell(row=3, column=3).value = app1.nom_maison_retraite
 ws_synthese_depistage.cell(row=1, column=4).value = la_date_jour_save
 
@@ -490,13 +496,13 @@ def press_on(key):
 
                     # Description état de l'otoscopie
                     if app3.text_reponse[3] == "Cerumen gênant OG" and app3.text_reponse[4] == "Cerumen gênant OD":
-                        resultat_test = resultat_test + " ODG cérumen a retirer"
+                        resultat_test = resultat_test + " ODG cérumen à retirer"
                     elif app3.text_reponse[3] == "Bouchon OG" and app3.text_reponse[4] == "Bouchon OD":
                         resultat_test = resultat_test + " ODG bouchons cerumen"
                     elif app3.text_reponse[3] == "Cerumen gênant OG":
-                        resultat_test = resultat_test + " OG cérumen a retirer"
+                        resultat_test = resultat_test + " OG cérumen à retirer"
                     elif app3.text_reponse[4] == "Cerumen gênant OD":
-                        resultat_test = resultat_test + " OD cérumen a retirer"
+                        resultat_test = resultat_test + " OD cérumen à retirer"
                     elif app3.text_reponse[3] == "Bouchon OG":
                         resultat_test = resultat_test + " OG bouchons cerumen"
                     elif app3.text_reponse[4] == "Bouchon OD":
@@ -558,8 +564,10 @@ def press_on(key):
                     numero_patient += 1
                 else:
                     print("Le fichier à mal été enregistré")
+                    sys.exit()
         else:
             print("il faut compléter les étapes précédentes")
+            sys.exit()
 
     if key == Key.f7:
         print(pyautogui.position())
@@ -586,11 +594,12 @@ def press_on(key):
 
 # Fermeture avec la touche esc
 def press_off(key):
-    global chemin_calisto, nom_maison_retraite, dossier_sauvegarde, la_date_jour_save, wb_liste_referent, wb_synthese_depistage
+    global chemin_calisto, nom_maison_retraite, dossier_sauvegarde, la_date_jour_save, wb_liste_referent, \
+        wb_synthese_depistage
     if key == Key.esc:
         if len(os.listdir(Path(chemin_calisto, nom_maison_retraite))) == 0:
             print("Le répertoire est vide")
-            exit()
+            sys.exit()
         else:
             print("fermeture du programme")
             pygame.mixer.init()
@@ -607,33 +616,6 @@ def press_off(key):
                 pdf_merge(rf"{chemin_calisto}/{nom_maison_retraite}", rf"{chemin_calisto}/{nom_maison_retraite}/Fiches_tous_patients_{nom_maison_retraite}.pdf")
             except Exception as e:
                 print("pdferreur", e)
-
-            # On enregistre le fichier excel dans le dossier de la maison de retraite
-            liste_enregistre = Path(chemin_calisto, nom_maison_retraite,
-                                    "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
-            wb_liste_referent.save(liste_enregistre)
-            os.remove(liste_enregistre_tmp)
-
-            # On enregistre le fichier excel dans le dossier de la maison de retraite
-            synthese_enregistre = Path(chemin_calisto, nom_maison_retraite,
-                                    "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
-            wb_synthese_depistage.save(synthese_enregistre)
-            os.remove(synthese_enregistre_tmp)
-
-            # On renomme le dossier de la maison de retraite avec date jour zone
-            nom_dossier_sauvegarde = nom_maison_retraite + "-" + datetime.today().strftime('%d-%m-%Y--%H-%M-%S')
-            dossier_maison_retraite = Path(chemin_calisto, nom_maison_retraite)
-            dossier_maison_retraite_date = Path(chemin_calisto, nom_dossier_sauvegarde)
-            dossier_sauvegarde_date = Path(dossier_sauvegarde, nom_dossier_sauvegarde)
-            shutil.move(dossier_maison_retraite, dossier_maison_retraite_date)
-            # On genere un fichier zip contenant les CR + l'excel
-            shutil.make_archive(dossier_maison_retraite_date, 'zip', chemin_calisto, nom_dossier_sauvegarde)
-            # On déplace l'archive dans le dossier
-            chemin_archive = Path(chemin_calisto, nom_dossier_sauvegarde + ".zip")
-            print(chemin_archive)
-            shutil.move(chemin_archive, dossier_maison_retraite_date)
-            # On déplace le dossier avec les comptes rendus + fichier excel + version ziper recapitulatif dans le dossier de sauvegarde
-            shutil.move(dossier_maison_retraite_date, dossier_sauvegarde_date)
 
             # Ouverture de la base de donnée et initialisation de la table info maison retraite et création référent VIDE
             connection = sqlite3.connect("files/test3.db")
@@ -724,7 +706,7 @@ def press_off(key):
                     connection.close()
 
             connection.close()
-            quit()
+            listener.stop()
             return 0
 
 
@@ -732,4 +714,38 @@ def press_off(key):
 with Listener(on_press=press_on, on_release=press_off) as listener:
     listener.join()
 
-exit()
+#Fin du programme enregistrement
+# On enregistre les fichiers excel Liste et Synthese dans le dossier de la maison de retraite
+
+# Liste
+liste_enregistre = Path(chemin_calisto, nom_maison_retraite,
+                        "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
+
+#Synthese
+synthese_enregistre = Path(chemin_calisto, nom_maison_retraite,
+                           "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
+wb_synthese_depistage.save(synthese_enregistre_tmp)
+wb_liste_referent.save(liste_enregistre_tmp)
+
+excel_triage(liste_enregistre_tmp, synthese_enregistre_tmp)
+
+# On renomme les fichiers temporaire en fichier definitif
+shutil.move(liste_enregistre_tmp, liste_enregistre)
+shutil.move(synthese_enregistre_tmp, synthese_enregistre)
+
+# On renomme le dossier de la maison de retraite avec date jour zone
+nom_dossier_sauvegarde = nom_maison_retraite + "-" + datetime.today().strftime('%d-%m-%Y--%H-%M-%S')
+dossier_maison_retraite = Path(chemin_calisto, nom_maison_retraite)
+dossier_maison_retraite_date = Path(chemin_calisto, nom_dossier_sauvegarde)
+dossier_sauvegarde_date = Path(dossier_sauvegarde, nom_dossier_sauvegarde)
+shutil.move(dossier_maison_retraite, dossier_maison_retraite_date)
+# On genere un fichier zip contenant les CR + l'excel
+shutil.make_archive(dossier_maison_retraite_date, 'zip', chemin_calisto, nom_dossier_sauvegarde)
+# On déplace l'archive dans le dossier
+chemin_archive = Path(chemin_calisto, nom_dossier_sauvegarde + ".zip")
+print(chemin_archive)
+shutil.move(chemin_archive, dossier_maison_retraite_date)
+# On déplace le dossier avec les comptes rendus + fichier excel + version ziper recapitulatif dans le dossier de sauvegarde
+shutil.move(dossier_maison_retraite_date, dossier_sauvegarde_date)
+
+
