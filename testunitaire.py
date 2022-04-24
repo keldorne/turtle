@@ -5,6 +5,7 @@ print(monmot.capitalize())
 print(monmot.upper())
 print(monmot.title())
 """
+import textwrap
 
 """
 pygame.mixer.init()
@@ -183,8 +184,66 @@ from fonctiondekev import loss_noah_extractor
 time.sleep(4)
 texts = loss_noah_extractor()
 print(texts[0])
+print(texts[1])
+print(texts[2])
+print(texts[3])
+"""
+"""
+from tkinter import *
+
+root = Tk()
+t = Text(wrap=WORD, height=3)
+t.pack()
+root.mainloop()
+"""
+textedavant="Que c'est bon de dormir dans tes bras, passer la nuit tout contre toi, sentir la douceur de ta peau qui se frotte à la mienne dans notre sommeil. J’aime m'endormir chaque soir dans tes bras après avoir fait l'amour, on est épuisé mais tellement heureux, j'aime qu'après s'être aimé comme on le fait, tu prennes mon visage entre tes mains, tu m'embrasse et tu le déposes contre tes seins, j'aime passer chaque nuit comme ça. Je me sens tellement unique, tellement à toi, je suis ton homme, je suis en ta possession et c'est tellement merveilleux comme sensation.\n"
+textdavant = textedavant.strip('\n')
+textewrapper = textwrap.wrap(textdavant, width=110)
+textedapres = ""
+for ligneremarque in textewrapper:
+    textedapres = textedapres + ligneremarque + "\n"
+
+print(textedapres)
+
+
+
+
+
+"""
+import openpyxl
+from fonctiondekev import excel_triage
+excel_triage("montest1.xlsx", "montest2.xlsx")
+numero_patient = 0
+lechemin = "montest1.xlsx"
+wb_liste_referent = openpyxl.load_workbook(lechemin)
+ws_liste_referent = wb_liste_referent['Feuil1']
+sheet_liste_referent = wb_liste_referent.active
+
+for row in sheet_liste_referent.iter_rows(min_row = 4, max_row = 204, min_col = 2, max_col = 2):
+  for cell in row:
+    if not cell.value:
+        break
+    else:
+        numero_patient += 1
+        print(cell.value)
+
+print (numero_patient)
+#print(sheet_liste_referent["A3"].value)
 """
 
+"""
+import os
+
+def excel_close_test():
+    print("Verification bonne fermeture d'excel")
+    try:
+      os_cmd = "taskkill /F /IM excel.exe"
+      if os.system(os_cmd) != 0:
+          raise Exception('Excel est déjà fermé')
+      print("Fermeture excel forcée pour enregistrement")
+    except:
+      print("Excel est déjà bien fermé")
+"""
 """
 maliste = [3,4,5]
 if not maliste:
@@ -233,7 +292,7 @@ from pathlib import Path
 import os
 import shutil
 from fonctiondekev import excel_triage
-
+"""
 input()
 chemin_calisto = Path(Path.home(), "Documents", "DocumentCalisto")
 nom_maison_retraite = "MR VILLA SAINT AGNES"
@@ -246,6 +305,7 @@ synthese_enregistre = Path(chemin_calisto, nom_maison_retraite,
                            "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
 
 excel_triage(liste_enregistre, synthese_enregistre)
+"""
 
 
 

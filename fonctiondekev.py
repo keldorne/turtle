@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import os
+import tkinter
 from pathlib import Path
 
 from PyPDF2 import PdfFileMerger
 
 import glob
 import win32com.client
+
+
 
 
 # pass the path of the parent_folder
@@ -35,46 +38,75 @@ def pdf_merge(parent_folder: str, output_folder: str):
 import cv2
 import pytesseract
 import re
-import pyscreenshot
+from PIL import ImageGrab
 import math
 import numpy as np
 import time
-pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Audio69\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
+import sys
 
 
 # img = cv2.imread('imageaudiovoid.png')
 
 # Cette fonction prend une capture d'écran d'une audiométrie sur Calisto et extraie la perte d'audition en dB
 def loss_noah_extractor():
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        print('Pytesseract catch in a PyInstaller bundle')
+        pytesseract.pytesseract.tesseract_cmd = r'Tesseract-OCR\tesseract.exe'
+    else:
+        print('Pytesseract catch in a normal Python process')
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Audio69\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
     # Capture de l'image
-    image = np.array(pyscreenshot.grab().convert('RGB'))
-    try:
-        print(image.shape)
-    except:
-        pass
+    print("tentative de capture de l'image")
 
-    # image = cv2.imread('imageaudiovoid.png')
-    print("OK")
+    try:
+        image = np.array(ImageGrab.grab().convert('RGB'))
+        print("image capturée")
+    except Exception as e:
+        print("erreur loss noah extractor", e)
+        analyse_od = "erreur lecture"
+        analyse_og = "erreur lecture"
+        analyse = "erreur lecture"
+        besoin = "erreur lecture"
+        return analyse_od, analyse_og, analyse, besoin
+
+    # Détermination si l'audiogramme est en mode fusionné ou séparé
+    print("Pré-traitement")
+    image_determinateur = image[260:285, 530:735]
+    image_determinateur = cv2.cvtColor(image_determinateur, cv2.COLOR_BGR2GRAY)
+    image_determinateur = cv2.threshold(image_determinateur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    txt_determinateur = pytesseract.image_to_string(image_determinateur)
+    if not txt_determinateur:
+        print("Audiogramme simple detecté")
+        imageOD = image[260:285, 225:425]
+    else:
+        print("Audiogramme double détecté")
+        imageOD = image[260:285, 900:1050]
+
     # Traitement de l'image
+    print("traitement de l'image")
     # Recadrage, binarisation de l'oreille droite
-    imageOD = image[260:285, 225:425]
+    print("Recadrage binarisation OD")
     imageOD = cv2.cvtColor(imageOD, cv2.COLOR_BGR2GRAY)
     imageOD = cv2.threshold(imageOD, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
     # Recadrage, binarisation de l'oreille gauche
+    print("Recadrage binarisation OG")
     imageOG = image[260:285, 1750:1925]
     imageOG = cv2.cvtColor(imageOG, cv2.COLOR_BGR2GRAY)
     imageOG = cv2.threshold(imageOG, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
     # Extraction des textes
+    print("Extraction des textes")
     textOD = pytesseract.image_to_string(imageOD)
     textOG = pytesseract.image_to_string(imageOG)
 
     # Extraction des valeurs des pertes
+    print("Extraction des pertes d'audition")
     perteod = re.findall("[0-9,-]+", textOD)
     perteog = re.findall("[0-9,-]+", textOG)
 
     # Mise en forme des valeurs
+    print("Mise en forme des valeurs")
     if not perteod:
         pod = 0
         perteod = 1000
@@ -96,6 +128,7 @@ def loss_noah_extractor():
         perteog = math.ceil(float(perteog[0].replace(",", ".")))
 
     # Logique d'analyse de la perte et retour du texte rapport
+    print("Analyse de la perte")
     if perteod == perteog:
         moyenne_perte = (perteod + perteog) / 2
     elif perteod > perteog:
@@ -129,7 +162,7 @@ def loss_noah_extractor():
         if oreille == 1000 or oreille == 2000:
             oreilles_reponse[count] = f"{text_choix_oreille} courbe non caractérisable"
             degre_reponse[count] = 8
-        elif oreille < 20:
+        elif oreille < 21:
             oreilles_reponse[count] = f"{text_choix_oreille} audition normale"
             degre_reponse[count] = 0
         elif 20 < oreille < 31:
@@ -154,7 +187,7 @@ def loss_noah_extractor():
             oreilles_reponse[count] = f"{text_choix_oreille} perte profonde de {oreilles[count]} dB"
             degre_reponse[count] = 7
 
-    if perteod > 20 and perteog > 20 and crit_sym == 4:
+    if crit_sym == 4:
         analyse = oreilles_reponse[0] + " / " + oreilles_reponse[1]
 
     elif perteod < 21 and perteog < 21:
@@ -185,11 +218,16 @@ def loss_noah_extractor():
         besoin = "Indeterminé"
 
 
-
+    print("Pre-enregistrement de l'analyse")
     analyse_od = oreilles_reponse[0]
     analyse_og = oreilles_reponse[1]
     print(analyse_od)
     print(analyse_og)
+
+    print(perteod)
+    print(perteog)
+    print(crit_sym)
+
     return analyse_od, analyse_og, analyse, besoin
 
 
@@ -199,7 +237,7 @@ def excel_triage(liste, synthese):
     liste_abs = os.path.abspath(liste)
     wb = excel_liste.Workbooks.Open(liste_abs)
     ws = wb.Worksheets('Feuil1')
-    ws.Range('B4:I28').Sort(Key1=ws.Range('B3'), Order1=1, Orientation=1)
+    ws.Range('B4:I400').Sort(Key1=ws.Range('B3'), Order1=1, Orientation=1)
     wb.Save()
     excel_liste.Application.Quit()
     # Traitement de la synthèse
@@ -207,6 +245,33 @@ def excel_triage(liste, synthese):
     synthese_abs = os.path.abspath(synthese)
     wb = excel_synthese.Workbooks.Open(synthese_abs)
     ws = wb.Worksheets('Feuil1')
-    ws.Range('B6:E28').Sort(Key1=ws.Range('B5'), Order1=1, Orientation=1)
+    ws.Range('B6:E400').Sort(Key1=ws.Range('B5'), Order1=1, Orientation=1)
     wb.Save()
     excel_synthese.Application.Quit()
+
+def showMessage(message, type='info', timeout=2500):
+    import tkinter as tk
+    from tkinter import messagebox as msgb
+
+    root = tk.Tk()
+    root.withdraw()
+    try:
+        root.after(timeout, root.destroy)
+        if type == 'info':
+            msgb.showinfo('Info', message, master=root)
+        elif type == 'warning':
+            msgb.showwarning('Warning', message, master=root)
+        elif type == 'error':
+            msgb.showerror('Error', message, master=root)
+    except:
+        pass
+
+def excel_close_test():
+    print("Verification bonne fermeture d'excel")
+    try:
+      os_cmd = "taskkill /F /IM excel.exe"
+      if os.system(os_cmd) != 0:
+          raise Exception('Excel est déjà fermé')
+      print("Fermeture excel forcée pour enregistrement")
+    except:
+      print("Excel est déjà bien fermé")

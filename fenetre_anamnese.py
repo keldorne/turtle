@@ -22,16 +22,19 @@ class FenetreAnamnese(tk.Tk):
     def fenetre_clear(self):
         print("On efface les listes")
         for i in range(len(self.les_items)):
-            try:
-                self.les_items[i].selection_clear(0, END)
-            except:
-                pass
+            if i == 5:
+                self.les_items[i].delete(1.0, END)
+            else:
+                try:
+                    self.les_items[i].selection_clear(0, END)
+                except:
+                    pass
 
     # Définition du bouton enregistrer
     def resultat_recolteur(self):
         for i in range(len(self.les_items)):
             if i == 5:
-                self.text_reponse[i] = self.les_items[i].get()
+                self.text_reponse[i] = self.les_items[i].get("1.0", "end").strip("\n")
                 if self.text_reponse[i] == "":
                     print(f"remarque item {i} pas rempli")
                     self.text_reponse[i] = ""
@@ -58,7 +61,8 @@ class FenetreAnamnese(tk.Tk):
         for i in range(len(self.les_items)):
             if i == 5:
                 try:
-                    self.remarque.set(sauvegarde[i])
+                    self.les_items[i].delete(1.0, "end")
+                    self.les_items[i].insert(1.0, sauvegarde[i])
                 except Exception as e:
                     print(e)
             else:
@@ -123,7 +127,7 @@ class FenetreAnamnese(tk.Tk):
         list_otoscopieOD.insert(2, "Cerumen gênant OD")
         list_otoscopieOD.insert(3, "Bouchon OD")
 
-        entry_remarque = tk.Entry(self, textvariable=self.remarque, width=60)
+        self.entry_remarque = tk.Text(self, wrap=tk.WORD, width=45, height=6)
 
         list_avisduresident = tk.Listbox(self, height=3, width=30, exportselection=0)
         list_avisduresident.insert(1, "OK")
@@ -176,7 +180,7 @@ class FenetreAnamnese(tk.Tk):
         list_dejaappareille.grid(row=2, column=1)
         list_otoscopieOG.grid(row=3, column=2)
         list_otoscopieOD.grid(row=3, column=1)
-        entry_remarque.grid(row=4, column=1, columnspan=2)
+        self.entry_remarque.grid(row=4, column=1, columnspan=2)
         list_avisduresident.grid(row=5, column=1)
         list_conseildappareillageOG.grid(row=6, column=2)
         list_conseildappareillageOD.grid(row=6, column=1)
@@ -188,7 +192,7 @@ class FenetreAnamnese(tk.Tk):
 
         # Création de la liste contenant les réponses choisie
         les_item1 = [list_acceptation, list_cognition, list_dejaappareille, list_otoscopieOG, list_otoscopieOD]
-        les_item2 = [entry_remarque, list_avisduresident, list_conseildappareillageOG, list_conseildappareillageOD,
+        les_item2 = [self.entry_remarque, list_avisduresident, list_conseildappareillageOG, list_conseildappareillageOD,
                      list_dome_emboutOG]
         les_item3 = [list_dome_emboutOD]
         self.les_items = les_item1 + les_item2 + les_item3
@@ -201,5 +205,7 @@ class FenetreAnamnese(tk.Tk):
 test = FenetreAnamnese()
 test.mainloop()
 """
+
+
 
 

@@ -2,6 +2,16 @@
 # GNU GPL v3
 # Icone de l'application en partie extraite du site https://www.flaticon.com et https://icon-icons.com/
 # Les bibliothèques importées
+###
+# Commande compilation pyinstaller
+# pyi-makespec odiocr.py    création de la configuration de la compilation
+#
+# pyinstaller.exe main.spec --noconfirm     compilation avec fenetre de debuggage
+#
+# pyinstaller.exe odiocr.spec --onefile --noconfirm     compilation de production
+###
+
+import textwrap
 from fenetre_maisonretraite import FenetreDossierMaisonRetraite
 from fenetre_donnee import FenetreDonnee
 from fenetre_anamnese import FenetreAnamnese
@@ -13,53 +23,50 @@ import os
 import sys
 import pygame
 import openpyxl
-from openpyxl.styles import colors
 from openpyxl.styles import Font, Color
 from datetime import datetime
 import shutil
-import sqlite3
 from pathlib import Path
-import pickle
-import win32com.client
 from fonctiondekev import pdf_merge
 from fonctiondekev import loss_noah_extractor
 from fonctiondekev import excel_triage
 from fonctiondekev import showMessage
+from fonctiondekev import excel_close_test
 from tkinter import messagebox
 
 # Variable globale pour gérer les étapes dans l'ordre
 global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient, nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3
 global chemin_calisto, dossier_sauvegarde, la_date_jour_save, choix_mode
 # Variable globale pour l'enregistrement dans la base de donnée
-global nom_patients, prenom_patients, nom_accompagnants, prenom_accompagnants, telephone_accompagnants,\
-    mail_accompagnants, anamnese_db1, anamnese_db2, anamnese_db3, anamnese_db4, anamnese_db5, anamnese_db6,\
-    anamnese_db7, anamnese_db8, anamnese_db9, anamnese_db10, anamnese_db11, empreinte_OD, empreinte_OG, oui_color,\
-    impossible_color, defaut_color, liste_enregistre_tmp, synthese_enregistre_tmp
+global nom_patients, prenom_patients, nom_accompagnants, prenom_accompagnants, telephone_accompagnants, \
+    mail_accompagnants, anamnese_db1, anamnese_db2, anamnese_db3, anamnese_db4, anamnese_db5, anamnese_db6, \
+    anamnese_db7, anamnese_db8, anamnese_db9, anamnese_db10, anamnese_db11, empreinte_OD, empreinte_OG, oui_color, \
+    impossible_color, defaut_color, liste_enregistre_tmp, synthese_enregistre_tmp, reglagecommentaire
 
-nom_patients = [""]*50
-prenom_patients = [""]*50
-nom_accompagnants = [""]*50
-prenom_accompagnants = [""]*50
-telephone_accompagnants = [""]*50
-mail_accompagnants = [""]*50
-anamnese_db1 = [""]*50
-anamnese_db2 = [""]*50
-anamnese_db3 = [""]*50
-anamnese_db4 = [""]*50
-anamnese_db5 = [""]*50
-anamnese_db6 = [""]*50
-anamnese_db7 = [""]*50
-anamnese_db8 = [""]*50
-anamnese_db9 = [""]*50
-anamnese_db10 = [""]*50
-anamnese_db11 = [""]*50
+nom_patients = [""] * 50
+prenom_patients = [""] * 50
+nom_accompagnants = [""] * 50
+prenom_accompagnants = [""] * 50
+telephone_accompagnants = [""] * 50
+mail_accompagnants = [""] * 50
+anamnese_db1 = [""] * 50
+anamnese_db2 = [""] * 50
+anamnese_db3 = [""] * 50
+anamnese_db4 = [""] * 50
+anamnese_db5 = [""] * 50
+anamnese_db6 = [""] * 50
+anamnese_db7 = [""] * 50
+anamnese_db8 = [""] * 50
+anamnese_db9 = [""] * 50
+anamnese_db10 = [""] * 50
+anamnese_db11 = [""] * 50
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     print('running in a PyInstaller bundle')
 else:
     print('running in a normal Python process')
 
-#Configuration police pour la synthèse
+# Configuration police pour la synthèse
 taillepolice = 8
 oui_color = Font(color="296c10", size=taillepolice)
 impossible_color = Font(color="6c1610", size=taillepolice)
@@ -87,7 +94,6 @@ if choix_mode == "test":
     except:
         pass
 
-
 ####
 # Path à modifier en fonction de votre configuration
 if choix_mode == "test":
@@ -97,92 +103,124 @@ if choix_mode == "test":
 else:
     chemin_calisto = Path(Path.home(), "Documents", "DocumentCalisto")
     chemin_liste_referent = Path(Path(__file__).parent.absolute(), "mode_test", "fichier_test", "Liste Referents.xlsx")
-    chemin_synthese_depistage = Path(Path(__file__).parent.absolute(), "mode_test", "fichier_test", "synthese_depistage.xlsx")
-    dossier_sauvegarde = Path(Path.home(), "Documents", "DocOdipro", "SynologyDrive", "Depistages")
+    chemin_synthese_depistage = Path(Path(__file__).parent.absolute(), "mode_test", "fichier_test",
+                                     "synthese_depistage.xlsx")
+    dossier_sauvegarde = Path(Path.home(), "Documents", "DocOdipro", "Depistages")
 ####
 
 
 # Paramètre fonctionnement
 duree = 0.1
-
 step_one = 0
 step_two = 0
 step_three = 0
 numero_patient = 0
-
-
+#Réglage nombre de caractère ligne commentaire
+reglagecommentaire = 110
 
 
 # Extraction du nom de dossier de la MR GUI pour vérifier l'état du dossier de l'audiomètre il doit contenir
-# uniquement le dossier vide avec nom de la maison de retraite 
+# uniquement le dossier vide avec nom de la maison de retraite
 def fermetureapp1():
     if messagebox.askokcancel("Quitter", "Voulez-vous fermer le programme?"):
         app1.destroy()
         sys.exit()
 
+
 app1 = FenetreDossierMaisonRetraite(chemin_calisto)
 app1.protocol("WM_DELETE_WINDOW", fermetureapp1)
 app1.mainloop()
-
 
 # Tests d'erreur pour vérifier les pré-requis
 files = os.listdir(chemin_calisto)
 nb_de_fichier = len(files)
 files_str = str(files)
-if nb_de_fichier > 1:
-    print("Le dossier n'est pas conforme, trop de fichier(s)/dossier(s)")
-    messagebox.showwarning(title=None,
-                           message="Le dossier n'est pas conforme, trop de fichier(s)/dossier(s), fermeture automatique")
-    nom_maison_retraite = ""
-    sys.exit()
+if app1.mode_recuperation == 0:
+    if nb_de_fichier > 1:
+        print("Le dossier n'est pas conforme, trop de fichier(s)/dossier(s)")
+        messagebox.showwarning(title=None,
+                               message="Le dossier n'est pas conforme, trop de fichier(s)/dossier(s), fermeture automatique")
+        nom_maison_retraite = ""
+        sys.exit()
 
-elif nb_de_fichier == 0:
-    print("Il n'y a pas de dossier avec le nom de la maison de retraite")
-    messagebox.showwarning(title=None,
-                           message="Il n'y a pas de dossier avec le nom de la maison de retraite, fermeture automatique")
-    nom_maison_retraite = ""
-    sys.exit()
+    elif nb_de_fichier == 0:
+        print("Il n'y a pas de dossier avec le nom de la maison de retraite")
+        messagebox.showwarning(title=None,
+                               message="Il n'y a pas de dossier avec le nom de la maison de retraite, fermeture automatique")
+        nom_maison_retraite = ""
+        sys.exit()
 
-elif ".pdf" in files_str or ".txt" in files_str:
-    nom_maison_retraite = ""
-    print("Il n'y a pas le dossier de la maison de retraite")
-    messagebox.showwarning(title=None,
-                           message="Il n'y a pas le dossier de la maison de retraite, fermeture automatique")
-    sys.exit()
-
-else:
-    for files in files:
+    else:
+        # Extraction du nom de dossier
         nom_maison_retraite = app1.nom_maison_retraite
-# Fin de l'extraction du nom de dossier
 
-# On rempli la maison de retraite et la date du jour dans l'excel des référents
-la_date_jour_save = datetime.today().strftime('%d-%m-%Y')
-liste_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
-                                            "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "temp.xlsx")
-wb_liste_referent = openpyxl.load_workbook(chemin_liste_referent)
-ws_liste_referent = wb_liste_referent['Feuil1']
-sheet_liste_referent = wb_liste_referent.active
-#Adjonction fonction filtrage
-sheet_liste_referent.auto_filter.ref = "B3:I3"
-ws_liste_referent.cell(row=2, column=4).value = app1.nom_maison_retraite
-ws_liste_referent.cell(row=2, column=7).value = la_date_jour_save
+        # On rempli la maison de retraite et la date du jour dans l'excel des référents
+        la_date_jour_save = datetime.today().strftime('%d-%m-%Y')
+        liste_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
+                                    "ListeRef-" + nom_maison_retraite + "_temp.xlsx")
+        wb_liste_referent = openpyxl.load_workbook(chemin_liste_referent)
+        ws_liste_referent = wb_liste_referent['Feuil1']
+        sheet_liste_referent = wb_liste_referent.active
 
-# On rempli la maison de retraite et la date du jour dans la synthese du dépistage
-synthese_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
-                                               "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "temp.xlsx")
-wb_synthese_depistage = openpyxl.load_workbook(chemin_synthese_depistage)
-ws_synthese_depistage = wb_synthese_depistage['Feuil1']
-sheet_synthese_depistage = wb_synthese_depistage.active
-#Adjonction fonction filtrage
-sheet_synthese_depistage.auto_filter.ref = "B5:E5"
-ws_synthese_depistage.cell(row=3, column=3).value = app1.nom_maison_retraite
-ws_synthese_depistage.cell(row=1, column=4).value = la_date_jour_save
+        # Adjonction fonction filtrage
+        sheet_liste_referent.auto_filter.ref = "B3:I3"
+        ws_liste_referent.cell(row=2, column=4).value = app1.nom_maison_retraite
+        ws_liste_referent.cell(row=2, column=7).value = la_date_jour_save
+
+        # On rempli la maison de retraite et la date du jour dans la synthese du dépistage
+        synthese_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
+                                       "Synthese-" + nom_maison_retraite + "_temp.xlsx")
+        wb_synthese_depistage = openpyxl.load_workbook(chemin_synthese_depistage)
+        ws_synthese_depistage = wb_synthese_depistage['Feuil1']
+        sheet_synthese_depistage = wb_synthese_depistage.active
+
+        # Adjonction fonction filtrage
+        sheet_synthese_depistage.auto_filter.ref = "B5:E5"
+        ws_synthese_depistage.cell(row=3, column=3).value = app1.nom_maison_retraite
+        ws_synthese_depistage.cell(row=1, column=4).value = la_date_jour_save
+
+
+# Récupération des informations dans les fichiers excel triage et synthèse si l'option est sélectionnée
+elif app1.mode_recuperation == 1:
+    print("Récupération patient")
+
+    # On charge le nom de la maison de retraite
+    nom_maison_retraite = app1.nom_maison_retraite
+    la_date_jour_save = datetime.today().strftime('%d-%m-%Y')
+
+    # On charge la liste des référents de la session précédente
+    liste_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
+                                "ListeRef-" + nom_maison_retraite + "_temp.xlsx")
+    wb_liste_referent = openpyxl.load_workbook(liste_enregistre_tmp)
+    ws_liste_referent = wb_liste_referent['Feuil1']
+    sheet_liste_referent = wb_liste_referent.active
+
+    # On charge la synthèse de la session précédente
+    synthese_enregistre_tmp = Path(chemin_calisto, nom_maison_retraite,
+                                   "Synthese-" + nom_maison_retraite + "_temp.xlsx")
+    wb_synthese_depistage = openpyxl.load_workbook(synthese_enregistre_tmp)
+    ws_synthese_depistage = wb_synthese_depistage['Feuil1']
+    sheet_synthese_depistage = wb_synthese_depistage.active
+
+    # On analyse la liste pour déterminer le nombre de patients à charger
+    for row in sheet_liste_referent.iter_rows(min_row=4, max_row=204, min_col=2, max_col=2):
+        for cell in row:
+            if not cell.value:
+                break
+            else:
+                numero_patient += 1
+                print(cell.value)
+    patient_recupere = str(numero_patient)
+    showMessage(patient_recupere + " patients récupérés")
+
+
+
 
 # Fonction principale qui détecte les touches du clavier
 def press_on(key):
-    global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient,\
-        nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3, empreinte_OD,\
-        empreinte_OG, oui_color, impossible_color, defaut_color, wb_liste_referent, wb_synthese_depistage,\
+    global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient, \
+        nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3, empreinte_OD, \
+        empreinte_OG, oui_color, impossible_color, defaut_color, wb_liste_referent, wb_synthese_depistage, \
         ws_liste_referent, ws_synthese_depistage, liste_enregistre_tmp, synthese_enregistre_tmp
 
     if key == Key.f9:
@@ -243,7 +281,7 @@ def press_on(key):
                     pyautogui.click(22, 171)
                     time.sleep(duree)
                     # On colle le prénom et le nom du patient
-                    prenom_nom_patient = [prenom_patient.title() + "  " + nom_patient.capitalize()]
+                    prenom_nom_patient = [prenom_patient.title() + "  " + nom_patient.upper()]
                     keyboard.write(prenom_nom_patient)
                     time.sleep(1.5)
                     # Selection fiche
@@ -294,7 +332,11 @@ def press_on(key):
                     if app3.text_reponse[5] == "":
                         text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " Aucune" + "\n"
                     else:
-                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + "\n"
+                        textremarque = app3.text_reponse[5].strip("\n")
+                        textewrapper = textwrap.wrap(textremarque, width=reglagecommentaire)
+                        for ligneremarque in textewrapper:
+                            text_a_copier = text_a_copier + ligneremarque + "\n"
 
                 elif app3.text_reponse[0] == "Dépistage impossible":
                     text_a_copier = text_a_copier + "   Impossible d'éffectuer le dépistage" + "\n"
@@ -339,7 +381,7 @@ def press_on(key):
                         text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[3] + "\n"
                     else:
                         text_a_copier = text_a_copier + "   " + app3.les_texts[2] + " " + app3.text_reponse[3] + ",  " + \
-                                    app3.text_reponse[4] + "\n"
+                                        app3.text_reponse[4] + "\n"
 
                     # Décision empreinte gestion dans le cas où il n'y aurait pas d'appareil auditif du tout
                     empreinte_OG = app3.id_reponse[9]
@@ -367,7 +409,8 @@ def press_on(key):
 
                     # Ligne avis
                     if app3.text_reponse[6] == "":
-                        text_a_copier = text_a_copier + "   " + app3.les_texts[4] + " Impossible de receuillir une réponse" + "\n"
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[
+                            4] + " Impossible de receuillir une réponse" + "\n"
                     else:
                         text_a_copier = text_a_copier + "   " + app3.les_texts[4] + " " + app3.text_reponse[6] + "\n"
 
@@ -423,7 +466,8 @@ def press_on(key):
                 shutil.copy(Path(Path(__file__).parent.absolute(), "mode_test", "fichier_test", "Report.pdf"),
                             Path(chemin_calisto, "Report.pdf"))
                 file_oldname = Path(chemin_calisto, "Report.pdf")
-                file_newname_newfile = Path(chemin_calisto, nom_maison_retraite, nom_patient + "-" + prenom_patient + "-" + nom_maison_retraite + ".pdf")
+                file_newname_newfile = Path(chemin_calisto, nom_maison_retraite,
+                                            nom_patient + "-" + prenom_patient + "-" + nom_maison_retraite + ".pdf")
                 shutil.move(file_oldname, file_newname_newfile)
                 # on met à jour le fichier excel avec identité patient et accompagnant
                 ws_liste_referent.cell(row=numero_patient + 4, column=2).value = nom_patient
@@ -450,7 +494,7 @@ def press_on(key):
                 # on ferme la fiche note
                 pyautogui.click(709, 411)
                 time.sleep(0.1)
-                #On force l'audiométrie tonale pour récupérer les données d'audiométrie
+                # On force l'audiométrie tonale pour récupérer les données d'audiométrie
                 pyautogui.click(25, 92)
                 time.sleep(0.1)
                 # on récupère les pertes moyenne avec pyscreenshot et pytesseract
@@ -471,7 +515,8 @@ def press_on(key):
                 if os.path.exists(Path(chemin_calisto, "Report.pdf")):
                     # on modifie le nom du pdf generé avec le nom du patient
                     file_oldname = Path(chemin_calisto, "Report.pdf")
-                    file_newname_newfile = Path(chemin_calisto, nom_maison_retraite, nom_patient + "-" + prenom_patient + "-" + nom_maison_retraite + ".pdf")
+                    file_newname_newfile = Path(chemin_calisto, nom_maison_retraite,
+                                                nom_patient + "-" + prenom_patient + "-" + nom_maison_retraite + ".pdf")
                     shutil.move(file_oldname, file_newname_newfile)
                     # on ferme la session
                     pyautogui.click(1897, 12)
@@ -504,8 +549,9 @@ def press_on(key):
                         ws_liste_referent.cell(row=numero_patient + 4, column=9).value = "ODG"
 
                     # on met à jour la synthèse
-                    #Nom prénom
-                    ws_synthese_depistage.cell(row=numero_patient + 6, column=2).value = nom_patient.upper() + " " + prenom_patient.upper()
+                    # Nom prénom
+                    ws_synthese_depistage.cell(row=numero_patient + 6,
+                                               column=2).value = nom_patient.upper() + " " + prenom_patient.upper()
                     ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = defaut_color
                     # Résultat du dépistage
                     # Description de la perte
@@ -513,7 +559,8 @@ def press_on(key):
                         resultat_test = "Refus du dépistage"
                     elif app3.text_reponse[0] == "Dépistage impossible":
                         resultat_test = "Dépistage impossible"
-                    elif app3.text_reponse[7] == "OG non appareillable" and app3.text_reponse[8] == "OD non appareillable":
+                    elif app3.text_reponse[7] == "OG non appareillable" \
+                            and app3.text_reponse[8] == "OD non appareillable":
                         resultat_test = "Non appareillable ODG"
                     elif app3.text_reponse[7] == "OG non appareillable":
                         resultat_test = "Non appareillable OG / " + analyse_perte[0]
@@ -538,7 +585,7 @@ def press_on(key):
                     ws_synthese_depistage.cell(row=numero_patient + 6, column=3).value = resultat_test
                     ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = defaut_color
 
-                    #Déjà appareillé
+                    # Déjà appareillé
                     if app3.text_reponse[2] == "":
                         resultat_appareillage = "Pas de réponse patient(e)"
                     elif app3.text_reponse[2] == "NON":
@@ -548,14 +595,15 @@ def press_on(key):
                     ws_synthese_depistage.cell(row=numero_patient + 6, column=4).value = resultat_appareillage
                     ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = defaut_color
 
-                    #Définition du besoin
+                    # Définition du besoin
                     if app3.text_reponse[0] == "Refuse le dépistage" or app3.text_reponse[0] == "Dépistage impossible":
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = impossible_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = impossible_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = impossible_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=2).font = impossible_color
 
-                    elif app3.text_reponse[7] == "OG non appareillable" and app3.text_reponse[8] == "OD non appareillable":
+                    elif app3.text_reponse[7] == "OG non appareillable" \
+                            and app3.text_reponse[8] == "OD non appareillable":
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = impossible_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=4).font = impossible_color
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=3).font = impossible_color
@@ -573,14 +621,19 @@ def press_on(key):
                         ws_synthese_depistage.cell(row=numero_patient + 6, column=5).font = defaut_color
                     # On incrémente les variables
                     # Enregistrement ligne par ligne dans la liste et la synthèse
-                    # On effectue un enregistrement temporaire en cas de bug et on réouvre la fiche (liste référent)
+
+                    # Test fermeture d'excel en cas d'ouverture manuel par l'utilisateur pour éviter les bugs
+                    excel_close_test()
+
+                    # On effectue un enregistrment temporaire en cas de bug et on réouvre la fiche (liste référent)
                     wb_liste_referent.save(liste_enregistre_tmp)
-                    #On réouvre
+
+                    # On réouvre
                     wb_liste_referent = openpyxl.load_workbook(liste_enregistre_tmp)
                     ws_liste_referent = wb_liste_referent['Feuil1']
                     sheet_liste_referent = wb_liste_referent.active
 
-                    # On effectue un enregistrment temporaire en cas de bug et on réouvre la fiche (synthèse)
+                    # On effectue un enregistrement temporaire en cas de bug et on réouvre la fiche (synthèse)
                     wb_synthese_depistage.save(synthese_enregistre_tmp)
                     # On réouvre
                     wb_synthese_depistage = openpyxl.load_workbook(synthese_enregistre_tmp)
@@ -595,11 +648,11 @@ def press_on(key):
                     print("Le fichier à mal été enregistré")
                     showMessage("Le fichier à mal été enregistré retournez à l'étape précédente où ré-enregistrez",
                                 type='warning', timeout=1000)
-                    #sys.exit()
+                    # sys.exit()
         else:
             print("Il faut compléter les étapes précédentes")
             showMessage("Il faut compléter les étapes précédentes", type='warning', timeout=1000)
-            #sys.exit()
+            # sys.exit()
 
     if key == Key.f7:
         print(pyautogui.position())
@@ -629,7 +682,7 @@ def press_on(key):
 # Fermeture avec la touche esc
 def press_off(key):
     global chemin_calisto, nom_maison_retraite, dossier_sauvegarde, la_date_jour_save, wb_liste_referent, \
-        wb_synthese_depistage
+        wb_synthese_depistage, lafin
     if key == Key.esc:
         if len(os.listdir(Path(chemin_calisto, nom_maison_retraite))) == 0:
             print("Le répertoire est vide")
@@ -645,150 +698,77 @@ def press_off(key):
             pygame.mixer.music.play()
             time.sleep(0.5)
             pygame.mixer.quit()
-            #Création fichier pdf fusionné de tous les patients
+            # Création fichier pdf fusionné de tous les patients
             print("Création du pdf fusionné de tous les patients")
             try:
-                pdf_merge(rf"{chemin_calisto}/{nom_maison_retraite}", rf"{chemin_calisto}/{nom_maison_retraite}/Fiches_tous_patients_{nom_maison_retraite}.pdf")
+                pdf_merge(rf"{chemin_calisto}/{nom_maison_retraite}",
+                          rf"{chemin_calisto}/{nom_maison_retraite}/Fiches_tous_patients_{nom_maison_retraite}.pdf")
             except Exception as e:
                 print("pdferreur", e)
 
-            # # Ouverture de la base de donnée et initialisation de la table info maison retraite et création référent VIDE
-            # connection = sqlite3.connect("files/test3.db")
-            # cursor_maison_retraite = connection.cursor()
-            # cursor_referent = connection.cursor()
-            #
-            # try:
-            #     db_maison_retraite = (cursor_maison_retraite.lastrowid, nom_maison_retraite, "")
-            #     cursor_maison_retraite.execute('INSERT INTO INFO_MAISON_RETRAITE VALUES(?,?,?)', db_maison_retraite)
-            #     id_maison_retraite = cursor_maison_retraite.lastrowid
-            #     print(id_maison_retraite)
-            # except Exception as e:
-            #     print("1erreur", e)
-            #     connection.rollback()
-            #     connection.close()
-            #
-            #     # Référent vide pour l'instant en attendant l'interfaçage avec API GOOGLE
-            #
-            # try:
-            #     db_referent = (cursor_referent.lastrowid, id_maison_retraite, 2, "", "", "", "", "")
-            #     cursor_referent.execute('INSERT INTO INFO_HUMAIN VALUES(?,?,?,?,?,?,?,?)', db_referent)
-            #     id_referent = cursor_referent.lastrowid
-            # except Exception as e:
-            #     print("2erreur", e)
-            #     connection.rollback()
-            #     connection.close()
-            #
-            # try:
-            #     connection.commit()
-            #     connection.close()
-            # except:
-            #     connection.close()
-            #
-            # # Enregistrement de l'anamnèse, des patients, des accompagnants, des fiches patients dans la base de donnée
-            #
-            # for i in range(2):
-            #     connection = sqlite3.connect("files/test3.db")
-            #     cursor2 = connection.cursor()
-            #     cursor3 = connection.cursor()
-            #     cursor4 = connection.cursor()
-            #     cursor5 = connection.cursor()
-            #     #Anamnese
-            #     try:
-            #         db_info_anamnese = (
-            #             cursor2.lastrowid, anamnese_db1[i], anamnese_db2[i], anamnese_db3[i], anamnese_db4[i],
-            #             anamnese_db5[i], anamnese_db6[i],
-            #             anamnese_db7[i], anamnese_db8[i], anamnese_db9[i], anamnese_db10[i], anamnese_db11[i], "", "")
-            #         cursor2.execute('INSERT INTO INFO_ANAMNESE VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)', db_info_anamnese)
-            #
-            #         id_anamnese = cursor2.lastrowid
-            #     except Exception as e:
-            #         print("erreur", e)
-            #         connection.close()
-            #
-            #     # Patient
-            #     try:
-            #         db_patient = (
-            #         cursor3.lastrowid, id_maison_retraite, 0, nom_patients[i].upper(), prenom_patients[i].upper(), "", "", "")
-            #         cursor3.execute('INSERT INTO INFO_HUMAIN VALUES(?,?,?,?,?,?,?,?)', db_patient)
-            #         id_patient = cursor3.lastrowid
-            #     except Exception as e:
-            #         print("erreur", e)
-            #         connection.close()
-            #     # Accompagnant
-            #     try:
-            #         db_accompagnant = (
-            #         cursor4.lastrowid, id_maison_retraite, 1, nom_accompagnants[i].upper(), prenom_accompagnants[i].upper(), "",
-            #         telephone_accompagnants[i], mail_accompagnants[i])
-            #         cursor4.execute('INSERT INTO INFO_HUMAIN VALUES(?,?,?,?,?,?,?,?)', db_accompagnant)
-            #         id_accompagnant = cursor4.lastrowid
-            #     except Exception as e:
-            #         print("erreur", e)
-            #         connection.close()
-            #
-            #     # Fiche patient
-            #     try:
-            #         db_fiche_patient = (cursor5.lastrowid, id_patient, id_accompagnant, id_referent, id_anamnese, la_date_jour_save, "", "", "", "", "")
-            #         cursor5.execute('INSERT INTO FICHE_PATIENT VALUES(?,?,?,?,?,?,?,?,?,?,?)', db_fiche_patient)
-            #         id_fiche_patient = cursor5.lastrowid
-            #     except Exception as e:
-            #         print("erreur", e)
-            #         connection.close()
-            #
-            #     try:
-            #         connection.commit()
-            #         connection.close()
-            #     except:
-            #         connection.close()
-
-            # connection.close()
+            lafin = 0
             listener.stop()
             return 0
+
+    if key == Key.f3:
+        showMessage("Fermeture de la session avec enregistrement temporaire")
+        lafin = 1
+        listener.stop()
+        return 0
 
 
 # On reste en veille des touches du clavier
 with Listener(on_press=press_on, on_release=press_off) as listener:
     listener.join()
 
-#Fin du programme enregistrement
-# On enregistre les fichiers excel Liste et Synthese dans le dossier de la maison de retraite
-print("Enregistrement des fichiers excel List et Synthèse")
+if lafin == 1:
+    print("Programme terminé")
+    sys.exit()
+else:
 
-# Liste
-liste_enregistre = Path(chemin_calisto, nom_maison_retraite,
-                        "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
+    # Fin du programme enregistrement
+    # On enregistre les fichiers excel Liste et Synthese dans le dossier de la maison de retraite
+    print("Enregistrement des fichiers excel List et Synthèse")
 
-#Synthese
-synthese_enregistre = Path(chemin_calisto, nom_maison_retraite,
-                           "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + "_KPERREAUT.xlsx")
-wb_synthese_depistage.save(synthese_enregistre_tmp)
-wb_liste_referent.save(liste_enregistre_tmp)
+    # Liste
+    liste_enregistre = Path(chemin_calisto, nom_maison_retraite,
+                            "ListeRef-" + la_date_jour_save + "-" + nom_maison_retraite + ".xlsx")
 
-excel_triage(liste_enregistre_tmp, synthese_enregistre_tmp)
+    # Synthese
+    synthese_enregistre = Path(chemin_calisto, nom_maison_retraite,
+                               "Synthese-" + la_date_jour_save + "-" + nom_maison_retraite + ".xlsx")
 
-# On renomme les fichiers temporaire en fichier definitif
-print('Supression des fichiers excel temporaires')
-shutil.move(liste_enregistre_tmp, liste_enregistre)
-shutil.move(synthese_enregistre_tmp, synthese_enregistre)
+    # Test fermeture d'excel en cas d'ouverture manuel par l'utilisateur pour éviter les bugs
+    excel_close_test()
 
-# On renomme le dossier de la maison de retraite avec date jour zone
-print('Mise à la date du dossier de la maison de retraite')
-nom_dossier_sauvegarde = nom_maison_retraite + "-" + datetime.today().strftime('%d-%m-%Y--%H-%M-%S')
-dossier_maison_retraite = Path(chemin_calisto, nom_maison_retraite)
-dossier_maison_retraite_date = Path(chemin_calisto, nom_dossier_sauvegarde)
-dossier_sauvegarde_date = Path(dossier_sauvegarde, nom_dossier_sauvegarde)
-shutil.move(dossier_maison_retraite, dossier_maison_retraite_date)
-# On genere un fichier zip contenant les CR + l'excel
-print("Génération sauvegarde .zip")
-shutil.make_archive(dossier_maison_retraite_date, 'zip', chemin_calisto, nom_dossier_sauvegarde)
-# On déplace l'archive dans le dossier
-print("Sauvegarde copie")
-chemin_archive = Path(chemin_calisto, nom_dossier_sauvegarde + ".zip")
-print(chemin_archive)
-shutil.move(chemin_archive, dossier_maison_retraite_date)
-# On déplace le dossier avec les comptes rendus + fichier excel + version ziper recapitulatif dans le dossier de sauvegarde
-shutil.move(dossier_maison_retraite_date, dossier_sauvegarde_date)
-showMessage("Session terminée, comptes rendu enregistrés")
+    wb_synthese_depistage.save(synthese_enregistre_tmp)
+    wb_liste_referent.save(liste_enregistre_tmp)
 
-print("Programme terminé")
+    excel_triage(liste_enregistre_tmp, synthese_enregistre_tmp)
 
+    # On renomme les fichiers temporaire en fichier definitif
+    print('Supression des fichiers excel temporaires')
+    shutil.move(liste_enregistre_tmp, liste_enregistre)
+    shutil.move(synthese_enregistre_tmp, synthese_enregistre)
 
+    # On renomme le dossier de la maison de retraite avec date jour zone
+    print('Mise à la date du dossier de la maison de retraite')
+    nom_dossier_sauvegarde = nom_maison_retraite + "-" + datetime.today().strftime('%d-%m-%Y--%H-%M-%S')
+    dossier_maison_retraite = Path(chemin_calisto, nom_maison_retraite)
+    dossier_maison_retraite_date = Path(chemin_calisto, nom_dossier_sauvegarde)
+    dossier_sauvegarde_date = Path(dossier_sauvegarde, nom_dossier_sauvegarde)
+    shutil.move(dossier_maison_retraite, dossier_maison_retraite_date)
+    # On genere un fichier zip contenant les CR + l'excel
+    print("Génération sauvegarde .zip")
+    shutil.make_archive(dossier_maison_retraite_date, 'zip', chemin_calisto, nom_dossier_sauvegarde)
+    # On déplace l'archive dans le dossier
+    print("Sauvegarde copie")
+    chemin_archive = Path(chemin_calisto, nom_dossier_sauvegarde + ".zip")
+    print(chemin_archive)
+    shutil.move(chemin_archive, dossier_maison_retraite_date)
+    # On déplace le dossier avec les comptes rendus + fichier excel + version ziper recapitulatif dans le dossier de sauvegarde
+    shutil.move(dossier_maison_retraite_date, dossier_sauvegarde_date)
+    showMessage("Session terminée, comptes rendu enregistrés")
+
+    print("Programme terminé")
+    sys.exit()
