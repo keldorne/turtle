@@ -6,8 +6,9 @@ import pickle
 
 class FenetreAnamnese(tk.Tk):
     # Constructeur
-    def __init__(self):
+    def __init__(self, analyse):
         tk.Tk.__init__(self)
+        self.analyse_perte = list(analyse)
         self.text_reponse = [""] * 11
         self.id_reponse = [""] * 11
         self.les_items = []
@@ -16,6 +17,7 @@ class FenetreAnamnese(tk.Tk):
         self.sauvegarde = []
         self.remarque = tk.StringVar()
         self.creer_fenetre()
+        self.entry_analyse.insert(0, analyse[2])
 
     # Définition du bouton tout effacer
 
@@ -52,6 +54,7 @@ class FenetreAnamnese(tk.Tk):
         self.sauvegarde = self.id_reponse
         self.sauvegarde[5] = self.text_reponse[5]
         pickle.dump(self.sauvegarde, open("files/temp_fenetre_anamnese.dat", "wb"))
+        self.analyse_perte[2] = self.entry_analyse.get()
         self.destroy()
 
     def recuperation(self):
@@ -91,11 +94,15 @@ class FenetreAnamnese(tk.Tk):
         label_avisduresident = tk.Label(self, text="Avis du résident (Si possible) :")
         label_conseildappareillage = tk.Label(self, text="Conseils d'appareillage :")
         label_dome_embout = tk.Label(self, text="Choix dome/embout")
+        label_resume_analyse = tk.Label(self, text="Analyse perte")
 
         # Création des boutons
         bouton_creer_contact_open = tk.Button(self, text="Enregistrer", command=self.resultat_recolteur)
         bouton_clear = tk.Button(self, text="Tout effacer", command=self.fenetre_clear)
         bouton_recuperer = tk.Button(self, text="Recuperer", command=self.recuperation)
+
+        # Analyse de la perte entrée qui affiche de résultat de loss_noah_extractor
+        self.entry_analyse = tk.Entry(self, width=60)
 
         # Création des entrées
         list_acceptation = tk.Listbox(self, height=4, width=30)
@@ -166,29 +173,32 @@ class FenetreAnamnese(tk.Tk):
         list_dome_emboutOD.insert(8, "Tube gros Embout sur mesure OD")
 
         # Disposition des éléments
-        label_acceptation.grid(row=0, column=0)
-        label_cognition.grid(row=1, column=0)
-        label_dejaappareille.grid(row=2, column=0)
-        label_otoscopie.grid(row=3, column=0)
-        label_remarque.grid(row=4, column=0)
-        label_avisduresident.grid(row=5, column=0)
-        label_conseildappareillage.grid(row=6, column=0)
-        label_dome_embout.grid(row=7, column=0)
+        label_resume_analyse.grid(row=0, column=0)
+        label_acceptation.grid(row=1, column=0)
+        label_cognition.grid(row=2, column=0)
+        label_dejaappareille.grid(row=3, column=0)
+        label_otoscopie.grid(row=4, column=0)
+        label_remarque.grid(row=5, column=0)
+        label_avisduresident.grid(row=6, column=0)
+        label_conseildappareillage.grid(row=7, column=0)
+        label_dome_embout.grid(row=8, column=0)
 
-        list_acceptation.grid(row=0, column=1)
-        list_cognition.grid(row=1, column=1)
-        list_dejaappareille.grid(row=2, column=1)
-        list_otoscopieOG.grid(row=3, column=2)
-        list_otoscopieOD.grid(row=3, column=1)
-        self.entry_remarque.grid(row=4, column=1, columnspan=2)
-        list_avisduresident.grid(row=5, column=1)
-        list_conseildappareillageOG.grid(row=6, column=2)
-        list_conseildappareillageOD.grid(row=6, column=1)
-        list_dome_emboutOG.grid(row=7, column=2)
-        list_dome_emboutOD.grid(row=7, column=1)
-        bouton_creer_contact_open.grid(row=8, column=0)
-        bouton_recuperer.grid(row=8, column=1)
-        bouton_clear.grid(row=8, column=2)
+        self.entry_analyse.grid(row=0, column=1, columnspan=2)
+        list_acceptation.grid(row=1, column=1)
+        list_cognition.grid(row=2, column=1)
+        list_dejaappareille.grid(row=3, column=1)
+        list_otoscopieOG.grid(row=4, column=2)
+        list_otoscopieOD.grid(row=4, column=1)
+        self.entry_remarque.grid(row=5, column=1, columnspan=2)
+        list_avisduresident.grid(row=6, column=1)
+        list_conseildappareillageOG.grid(row=7, column=2)
+        list_conseildappareillageOD.grid(row=7, column=1)
+        list_dome_emboutOG.grid(row=8, column=2)
+        list_dome_emboutOD.grid(row=8, column=1)
+        bouton_creer_contact_open.grid(row=9, column=0)
+        bouton_recuperer.grid(row=9, column=1)
+        bouton_clear.grid(row=9, column=2)
+
 
         # Création de la liste contenant les réponses choisie
         les_item1 = [list_acceptation, list_cognition, list_dejaappareille, list_otoscopieOG, list_otoscopieOD]
@@ -202,9 +212,11 @@ class FenetreAnamnese(tk.Tk):
         self.les_texts = lestext1 + lestext2
 
 """
-test = FenetreAnamnese()
+analyse_perte = ['oreille droite', 'oreille_gauche', 'analyse_globale', 'lebesoin']
+test = FenetreAnamnese(analyse_perte)
 test.mainloop()
 """
+
 
 
 

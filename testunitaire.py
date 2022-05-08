@@ -189,12 +189,33 @@ print(texts[2])
 print(texts[3])
 """
 """
+#Wrapped text bout de code non fonctionnel appart si il est mis dans le programme principal
+text_a_copier = text_a_copier + "   " + app3.les_texts[3] + ""
+textremarque = app3.text_reponse[5].strip("")
+textewrapper = textwrap.wrap(textremarque, width=reglagecommentaire)
+for ligneremarque in textewrapper:
+    text_a_copier = text_a_copier + ligneremarque + ""
+"""
+"""
+from fonctiondekev import showMessage
+
+
+
+if 1==1:
+    showMessage("Test", type='info')
+    print("la suite est la")
+else:
+    print("elle n'est pas la")
+"""
+"""
 from tkinter import *
 
 root = Tk()
 t = Text(wrap=WORD, height=3)
 t.pack()
 root.mainloop()
+"""
+
 """
 textedavant="Que c'est bon de dormir dans tes bras, passer la nuit tout contre toi, sentir la douceur de ta peau qui se frotte à la mienne dans notre sommeil. J’aime m'endormir chaque soir dans tes bras après avoir fait l'amour, on est épuisé mais tellement heureux, j'aime qu'après s'être aimé comme on le fait, tu prennes mon visage entre tes mains, tu m'embrasse et tu le déposes contre tes seins, j'aime passer chaque nuit comme ça. Je me sens tellement unique, tellement à toi, je suis ton homme, je suis en ta possession et c'est tellement merveilleux comme sensation.\n"
 textdavant = textedavant.strip('\n')
@@ -204,6 +225,7 @@ for ligneremarque in textewrapper:
     textedapres = textedapres + ligneremarque + "\n"
 
 print(textedapres)
+"""
 
 
 
@@ -306,7 +328,29 @@ synthese_enregistre = Path(chemin_calisto, nom_maison_retraite,
 
 excel_triage(liste_enregistre, synthese_enregistre)
 """
+"""
+class Dog:
 
+    kind = 'canine'         # class variable shared by all instances
+
+    def __init__(self, name):
+        self.name = name    # instance variable unique to each instance
+        print(self.name)
+d = Dog('Fido')
+"""
+"""
+from fenetre_anamnese import FenetreAnamnese
+analyse_perte = ['oreille droite', 'oreille_gauche', 'analyse_globale', 'lebesoin']
+test = FenetreAnamnese(analyse_perte)
+test.mainloop()
+"""
+
+from fenetre_maisonretraite import FenetreDossierMaisonRetraite
+chemin_calisto = Path(Path(__file__).parent.absolute(), "mode_test", "DocumentCalisto")
+chemin_liste_referent = Path(Path(__file__).parent.absolute(), "mode_test", "fichier_test", "Liste Referents.xlsx")
+dossier_sauvegarde = Path(Path(__file__).parent.absolute(), "mode_test", "Depistages")
+app1 = FenetreDossierMaisonRetraite(chemin_calisto, dossier_sauvegarde)
+app1.mainloop()
 
 
 

@@ -33,6 +33,7 @@ from fonctiondekev import excel_triage
 from fonctiondekev import showMessage
 from fonctiondekev import excel_close_test
 from tkinter import messagebox
+import pickle
 
 # Variable globale pour gérer les étapes dans l'ordre
 global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient, nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3
@@ -108,6 +109,8 @@ else:
     dossier_sauvegarde = Path(Path.home(), "Documents", "DocOdipro", "Depistages")
 ####
 
+pickle.dump(chemin_calisto, open("files/chemin_calisto.dat", "wb"))
+pickle.dump(dossier_sauvegarde, open("files/dossier_sauvegarde.dat", "wb"))
 
 # Paramètre fonctionnement
 duree = 0.1
@@ -126,10 +129,11 @@ def fermetureapp1():
         app1.destroy()
         sys.exit()
 
-
-app1 = FenetreDossierMaisonRetraite(chemin_calisto)
+app1 = FenetreDossierMaisonRetraite(chemin_calisto, dossier_sauvegarde)
 app1.protocol("WM_DELETE_WINDOW", fermetureapp1)
 app1.mainloop()
+chemin_calisto = app1.chemin_calisto
+dossier_sauvegarde = app1.dossier_sauvegarde
 
 # Tests d'erreur pour vérifier les pré-requis
 files = os.listdir(chemin_calisto)
@@ -138,15 +142,13 @@ files_str = str(files)
 if app1.mode_recuperation == 0:
     if nb_de_fichier > 1:
         print("Le dossier n'est pas conforme, trop de fichier(s)/dossier(s)")
-        messagebox.showwarning(title=None,
-                               message="Le dossier n'est pas conforme, trop de fichier(s)/dossier(s), fermeture automatique")
+        showMessage("Le dossier n'est pas conforme, trop de fichier(s)/dossier(s), fermeture automatique", "warning")
         nom_maison_retraite = ""
         sys.exit()
 
     elif nb_de_fichier == 0:
         print("Il n'y a pas de dossier avec le nom de la maison de retraite")
-        messagebox.showwarning(title=None,
-                               message="Il n'y a pas de dossier avec le nom de la maison de retraite, fermeture automatique")
+        showMessage("Il n'y a pas de dossier avec le nom de la maison de retraite, fermeture automatique", "warning")
         nom_maison_retraite = ""
         sys.exit()
 
@@ -221,7 +223,7 @@ def press_on(key):
     global step_one, step_two, step_three, numero_patient, nom_maison_retraite, nom_patient, prenom_patient, \
         nom_accompagnant, prenom_accompagnant, telephone_accompagnant, mail_accompagnant, app3, empreinte_OD, \
         empreinte_OG, oui_color, impossible_color, defaut_color, wb_liste_referent, wb_synthese_depistage, \
-        ws_liste_referent, ws_synthese_depistage, liste_enregistre_tmp, synthese_enregistre_tmp
+        ws_liste_referent, ws_synthese_depistage, liste_enregistre_tmp, synthese_enregistre_tmp, analyse_perte
 
     if key == Key.f9:
         if step_one == 0 and step_two == 0 and step_three == 0:
@@ -281,8 +283,9 @@ def press_on(key):
                     pyautogui.click(22, 171)
                     time.sleep(duree)
                     # On colle le prénom et le nom du patient
-                    prenom_nom_patient = [prenom_patient.title() + "  " + nom_patient.upper()]
+                    prenom_nom_patient = prenom_patient.title() + "  " + nom_patient.upper()
                     keyboard.write(prenom_nom_patient)
+                    print(prenom_nom_patient)
                     time.sleep(1.5)
                     # Selection fiche
                     pyautogui.click(52, 340)
@@ -296,9 +299,19 @@ def press_on(key):
 
     if key == Key.f10:
         if step_one == 1 and step_two == 0 and step_three == 0:
+            # On force l'audiométrie tonale la lecture de l'audiogramme tonal
+            pyautogui.click(25, 92)
+            time.sleep(0.1)
+            # on récupère les pertes moyenne avec pyscreenshot et pytesseract
+            print("Analyse de l'audiograme")
+            analyse_perte = loss_noah_extractor()
+            print("Analyse de l'audiograme terminée")
             # Ouverture de la fenetre graphique
-            app3 = FenetreAnamnese()
+            app3 = FenetreAnamnese(analyse_perte)
             app3.mainloop()
+            # Récupération de la modification éventuelle de l'analyse
+            analyse_perte = list(analyse_perte)
+            analyse_perte[2] = app3.analyse_perte[2]
             if choix_mode == "test":
                 pass
             else:
@@ -332,11 +345,7 @@ def press_on(key):
                     if app3.text_reponse[5] == "":
                         text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " Aucune" + "\n"
                     else:
-                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + "\n"
-                        textremarque = app3.text_reponse[5].strip("\n")
-                        textewrapper = textwrap.wrap(textremarque, width=reglagecommentaire)
-                        for ligneremarque in textewrapper:
-                            text_a_copier = text_a_copier + ligneremarque + "\n"
+                        text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
 
                 elif app3.text_reponse[0] == "Dépistage impossible":
                     text_a_copier = text_a_copier + "   Impossible d'éffectuer le dépistage" + "\n"
@@ -406,11 +415,16 @@ def press_on(key):
                         text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " Aucune" + "\n"
                     else:
                         text_a_copier = text_a_copier + "   " + app3.les_texts[3] + " " + app3.text_reponse[5] + "\n"
-
+                    # Ligne analyse
+                    text_a_copier = text_a_copier + "  Analyse de la perte : " + analyse_perte[2] + "\n"
                     # Ligne avis
                     if app3.text_reponse[6] == "":
                         text_a_copier = text_a_copier + "   " + app3.les_texts[
                             4] + " Impossible de receuillir une réponse" + "\n"
+                    elif app3.text_reponse[0] == "Refuse le dépistage" or app3.text_reponse[0] == "Dépistage impossible":
+                        pass
+                    elif app3.text_reponse[8] == "OD non appareillable" and app3.text_reponse[7] == "OG non appareillable":
+                        pass
                     else:
                         text_a_copier = text_a_copier + "   " + app3.les_texts[4] + " " + app3.text_reponse[6] + "\n"
 
@@ -467,7 +481,7 @@ def press_on(key):
                             Path(chemin_calisto, "Report.pdf"))
                 file_oldname = Path(chemin_calisto, "Report.pdf")
                 file_newname_newfile = Path(chemin_calisto, nom_maison_retraite,
-                                            nom_patient + "-" + prenom_patient + "-" + nom_maison_retraite + ".pdf")
+                                            nom_patient.upper() + "-" + prenom_patient.title() + "-" + nom_maison_retraite.upper() + ".pdf")
                 shutil.move(file_oldname, file_newname_newfile)
                 # on met à jour le fichier excel avec identité patient et accompagnant
                 ws_liste_referent.cell(row=numero_patient + 4, column=2).value = nom_patient
@@ -497,10 +511,6 @@ def press_on(key):
                 # On force l'audiométrie tonale pour récupérer les données d'audiométrie
                 pyautogui.click(25, 92)
                 time.sleep(0.1)
-                # on récupère les pertes moyenne avec pyscreenshot et pytesseract
-                print("Analyse de l'audiograme")
-                analyse_perte = loss_noah_extractor()
-                print("Analyse de l'audiograme terminée")
                 # On valide la confirmation d'enregistrement dans le cas où on revient sur la fiche
                 pyautogui.click(928, 566)
                 time.sleep(0.1)
@@ -516,7 +526,7 @@ def press_on(key):
                     # on modifie le nom du pdf generé avec le nom du patient
                     file_oldname = Path(chemin_calisto, "Report.pdf")
                     file_newname_newfile = Path(chemin_calisto, nom_maison_retraite,
-                                                nom_patient + "-" + prenom_patient + "-" + nom_maison_retraite + ".pdf")
+                                                nom_patient.upper() + "-" + prenom_patient.title() + "-" + nom_maison_retraite.upper() + ".pdf")
                     shutil.move(file_oldname, file_newname_newfile)
                     # on ferme la session
                     pyautogui.click(1897, 12)
@@ -686,6 +696,8 @@ def press_off(key):
     if key == Key.esc:
         if len(os.listdir(Path(chemin_calisto, nom_maison_retraite))) == 0:
             print("Le répertoire est vide")
+            showMessage("Le répertoire est vide, il n'y a rien à enregistrer, fermeture du programme")
+            lafin = 1
             sys.exit()
         else:
             print("fermeture du programme")
@@ -710,7 +722,7 @@ def press_off(key):
             listener.stop()
             return 0
 
-    if key == Key.f3:
+    if key == Key.f4:
         showMessage("Fermeture de la session avec enregistrement temporaire")
         lafin = 1
         listener.stop()

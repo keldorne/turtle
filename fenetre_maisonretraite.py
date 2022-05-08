@@ -7,12 +7,14 @@ from ttkthemes import ThemedStyle
 from tkinter import ttk
 import pickle
 from fonctiondekev import showMessage
+import send2trash
 
 class FenetreDossierMaisonRetraite(tk.Tk):
-    def __init__(self, chemin_calisto):
+    def __init__(self, chemin_calisto, dossier_sauvegarde):
         tk.Tk.__init__(self)
         self.nom_maison_retraite = []
-        self.chemin_calisto = Path(chemin_calisto)
+        self.chemin_calisto = pickle.load(open("files/chemin_calisto.dat", "rb"))
+        self.dossier_sauvegarde = pickle.load(open("files/dossier_sauvegarde.dat", "rb"))
         self.variable_etat_dossier = tk.StringVar()
         self.variable_etat_dossier.set(listdir(self.chemin_calisto))
         self.entry_maison_retraite = []
@@ -58,16 +60,17 @@ class FenetreDossierMaisonRetraite(tk.Tk):
 
     def bouton_effacer(self):
         # On efface tout le dossier calisto
-        shutil.rmtree(self.chemin_calisto)
+        send2trash.send2trash(self.chemin_calisto)
         # On recrée le dossier vide
         os.mkdir(self.chemin_calisto)
         self.variable_etat_dossier.set(listdir(self.chemin_calisto))
+        print(self.chemin_calisto)
 
     def bouton_enregistrer(self):
         listdir_local = listdir(self.chemin_calisto)
         # On verifie que le dossier calisto contient bien uniquement un dossier de la maison de retraite
         if len(listdir_local) == 1:
-            # Si c'est me cas on enregistre le nom de la maison de retraite
+            # Si c'est le cas on enregistre le nom de la maison de retraite
             self.nom_maison_retraite = listdir(self.chemin_calisto)[0]
             print(self.nom_maison_retraite)
             self.mode_recuperation = 0
@@ -76,9 +79,67 @@ class FenetreDossierMaisonRetraite(tk.Tk):
         # Si il n'y a pas qu'un seul dossier où que le nom de la maison de retraite est vide on indique qu'on ne la connait pas
         elif self.nom_maison_retraite == []:
             showMessage("Veuillez entrer un nom d'établissement", 'warning')
-
         # On ferme la fenetre
+    def gestioncalisto(self):
+        # Création d'un sous fenetre
+        self.wingc = tk.Toplevel(self)
+        labelgc = tk.Label(self.wingc, text="dossier calisto actuel :")
+        self.entrygc = tk.Entry(self.wingc, width=80)
+        self.entrygc.insert(0, self.chemin_calisto)
+        # Definition des boutons
+        bouton_enregistrer_gc = tk.Button(self.wingc, text="ENREGISTRER", command=self.bouton_enregistrer_gc)
+        bouton_quitter_gc = tk.Button(self.wingc, text="QUITTER", command=self.bouton_quitter_gc)
+        #Mise en forme de la fenetre
+        labelgc.pack()
+        self.entrygc.pack()
+        bouton_enregistrer_gc.pack()
+        bouton_quitter_gc.pack()
 
+    def bouton_enregistrer_gc(self):
+        if os.path.isdir(self.entrygc.get()) is True:
+            self.chemin_calisto = self.entrygc.get()
+            pickle.dump(self.chemin_calisto, open("files/chemin_calisto.dat", "wb"))
+            showMessage("le répertoire est bien enregistré", 'info')
+            self.wingc.destroy()
+        else:
+            showMessage("le répertoire n'est pas valide", 'warning')
+        pass
+
+    def bouton_quitter_gc(self):
+        self.wingc.destroy()
+
+    def gestionsauvegarde(self):
+        # Création d'un sous fenetre
+        self.wings = tk.Toplevel(self)
+        labelgs = tk.Label(self.wings, text="dossier sauvegarde actuel :")
+        self.entrygs = tk.Entry(self.wings, width=80)
+        self.entrygs.insert(0, self.dossier_sauvegarde)
+        # Definition des boutons
+        bouton_enregistrer_gs = tk.Button(self.wings, text="ENREGISTRER", command=self.bouton_enregistrer_gs)
+        bouton_quitter_gs = tk.Button(self.wings, text="QUITTER", command=self.bouton_quitter_gs)
+        # Mise en forme de la fenetre
+        labelgs.pack()
+        self.entrygs.pack()
+        bouton_enregistrer_gs.pack()
+        bouton_quitter_gs.pack()
+
+    def bouton_enregistrer_gs(self):
+        if os.path.isdir(self.entrygs.get()) is True:
+            self.chemin_calisto = self.entrygs.get()
+            pickle.dump(self.dossier_sauvegarde, open("files/dossier_sauvegarde.dat", "wb"))
+            showMessage("le répertoire est bien enregistré", 'info')
+            self.wings.destroy()
+        else:
+            showMessage("le répertoire n'est pas valide", 'warning')
+        pass
+
+    def bouton_quitter_gs(self):
+        self.wings.destroy()
+
+
+    def miseajour(self):
+        showMessage("la fonction n'est pas encore implémentée", 'warning')
+        pass
 
     def creer_fenetre(self):
 
@@ -100,6 +161,15 @@ class FenetreDossierMaisonRetraite(tk.Tk):
         bouton_enregistrer = ttk.Button(self, text="ENREGISTRER", command=self.bouton_enregistrer)
         bouton_recuperation = ttk.Button(self, text="RECUPERER SESSION PRECEDENTE INTERROMPUE",
                                          command=self.bouton_recuperation)
+        # Définition de la barre de menu
+        menubar = tk.Menu(self)
+        menu1 = tk.Menu(menubar, tearoff=0)
+        menu1.add_command(label="Changer dossier d'enregistrement calisto", command=self.gestioncalisto)
+        menu1.add_command(label="Changer dossier de sauvegarde des comptes rendus", command=self.gestionsauvegarde)
+        menu1.add_separator()
+        menu1.add_command(label="Mise à jour logiciel", command=self.miseajour)
+        menubar.add_cascade(label="Options", menu=menu1)
+        self.config(menu=menubar)
 
         label_etat_dossier.grid(row=0, column=0)
         label_de_letat.grid(row=0, column=1, columnspan=2)
@@ -118,3 +188,4 @@ dossier_sauvegarde = Path(Path(__file__).parent.absolute(), "mode_test", "Depist
 app1 = FenetreDossierMaisonRetraite(chemin_calisto)
 app1.mainloop()
 """
+
