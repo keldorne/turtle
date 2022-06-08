@@ -1,5 +1,3 @@
-#Programme du bichon
-
 Pré-requis pour que le programme marche :
 
 ->Preparation en amont, dans le logiciel Callisto il faut rebinder les raccourucis F9 à F11 
